@@ -2,16 +2,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dradacorus.online.client;
+package dradacorus.online.kobold;
 
-import dradacorus.online.server.layers.ILayer;
+import dradacorus.online.dragon.IDragonServer;
+import dradacorus.online.server.lairs.ILair;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
-public interface IDragonSocket {
+public interface IKoboldSocket {
 
     public void start();
 
@@ -35,6 +36,8 @@ public interface IDragonSocket {
 
     public void disconnect();
 
+    public IDragonServer getDragon();
+
     public Socket getSocket();
 
     public DataInputStream getDis();
@@ -45,14 +48,14 @@ public interface IDragonSocket {
 
     public void setKey(byte[] key);
 
-    public ILayer getLayer();
+    public ILair getLair();
 
-    public void setLayer(ILayer layer);
+    public void setLair(ILair lair);
 
     public void setConnected(boolean connected);
 
-    public String getClientName();
+    public String getKoboldName();
 
-    public void setClientName(String name);
+    public void setKoboldName(String name);
 
 }

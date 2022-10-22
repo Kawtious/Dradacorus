@@ -4,19 +4,23 @@
  */
 package dradacorus.online.utils;
 
-import dradacorus.online.client.IDragonSocket;
-import dradacorus.online.server.IDragonServer;
-import dradacorus.online.server.layers.ILayer;
+import dradacorus.discord.DiscordHandler;
+import dradacorus.online.dragon.IDragonServer;
+import dradacorus.online.kobold.IKoboldSocket;
+import dradacorus.online.server.lairs.ILair;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SocketHelper {
+
+    public static final String OBJ_INCOMING_HEADER = "obj_data_incoming::";
 
     public static byte[] readBytes(DataInputStream dis, byte[] key) throws IOException {
         int len = dis.readInt();
@@ -47,56 +51,65 @@ public class SocketHelper {
         }
     }
 
-    public static Object readObject(byte[] bytes) throws IOException, ClassNotFoundException, ClassNotFoundException {
-        ByteArrayInputStream bis = new ByteArrayInputStream(bytes);
-        ObjectInput in = new ObjectInputStream(bis);
-        return in.readObject();
+    public static Object getObjectFromBytes(byte[] bytes) {
+        try (final ByteArrayInputStream bis = new ByteArrayInputStream(bytes); final ObjectInputStream in = new ObjectInputStream(bis)) {
+            return in.readObject();
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
     }
 
-    public static byte[] readObjectBytes(Object object) throws IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        ObjectOutputStream out = new ObjectOutputStream(bos);
-        out.writeObject(object);
-        out.flush();
-
-        return bos.toByteArray();
+    public static byte[] readObjectBytes(Object object) {
+        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream(); final ObjectOutputStream out = new ObjectOutputStream(bos)) {
+            out.writeObject(object);
+            return bos.toByteArray();
+        } catch (IOException ex) {
+            Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return new byte[1];
     }
 
-    public static void sendObject(IDragonSocket client, Object object) throws IOException {
-        send(client, readObjectBytes(object));
-    }
-
-    public static void send(IDragonSocket client, byte[] message) {
+    public static void send(IKoboldSocket kobold, byte[] message) {
         try {
-            sendBytes(client.getDos(), message, client.getKey());
+            sendBytes(kobold.getDos(), message, kobold.getKey());
         } catch (IOException ex) {
         }
     }
 
-    public static void sendTo(ILayer layer, byte[] message) {
-        for (IDragonSocket client : layer.getClients()) {
-            send(client, message);
+    public static void sendTo(ILair lair, byte[] message) {
+        for (IKoboldSocket kobold : lair.getKobolds()) {
+            send(kobold, message);
         }
-    }
-
-    public static void sendTo(ILayer layer, String message) {
-        sendTo(layer, message.getBytes());
     }
 
     public static void sendTo(IDragonServer server, byte[] message) {
-        for (IDragonSocket client : server.getClients()) {
-            if (client.getLayer() == null) { // if not in a layer
-                send(client, message);
+        for (IKoboldSocket kobold : server.getKobolds()) {
+            if (kobold.getLair() == null) { // if not in a lair
+                send(kobold, message);
             }
         }
+    }
+
+    public static void sendObject(IKoboldSocket kobold, Object object) throws IOException {
+        send(kobold, readObjectBytes(object));
+    }
+
+    public static void send(IKoboldSocket kobold, String message) {
+        send(kobold, message.getBytes());
+    }
+
+    public static void sendTo(ILair lair, String message) {
+        sendTo(lair, message.getBytes());
     }
 
     public static void sendTo(IDragonServer server, String message) {
         sendTo(server, message.getBytes());
     }
 
-    public static void send(IDragonSocket client, String message) {
-        send(client, message.getBytes());
+    public static void sendDiscordUpdate(IKoboldSocket kobold) {
+        send(kobold, OBJ_INCOMING_HEADER);
+        send(kobold, readObjectBytes(DiscordHandler.buildDiscordContainer(kobold)));
     }
 
     private SocketHelper() {

@@ -2,25 +2,25 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dradacorus.online.server.layers;
+package dradacorus.online.server.lairs;
 
-import dradacorus.online.client.IDragonSocket;
+import dradacorus.online.kobold.IKoboldSocket;
 import java.util.List;
 import java.util.UUID;
 
-public interface ILayer {
+public interface ILair {
 
     public void destroy();
 
-    public void addClient(IDragonSocket client);
+    public void addKobold(IKoboldSocket client);
 
-    public void kick(IDragonSocket client);
+    public void kick(IKoboldSocket client);
 
-    public void ban(IDragonSocket client);
+    public void ban(IKoboldSocket client);
 
-    public void op(IDragonSocket client);
+    public void op(IKoboldSocket client);
 
-    public void deop(IDragonSocket client);
+    public void deop(IKoboldSocket client);
 
     public UUID getId();
 
@@ -36,10 +36,10 @@ public interface ILayer {
 
     public void setPassword(String password);
 
-    public List<IDragonSocket> getClients();
+    public List<IKoboldSocket> getKobolds();
 
-    public List<IDragonSocket> getOperators();
+    public List<IKoboldSocket> getOperators();
 
-    public List<IDragonSocket> getBlacklist();
+    public List<IKoboldSocket> getBlacklist();
 
 }

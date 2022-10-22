@@ -2,10 +2,10 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dradacorus.online.client;
+package dradacorus.online.kobold;
 
-import dradacorus.online.server.IDragonServer;
-import dradacorus.online.server.layers.ILayer;
+import dradacorus.online.dragon.IDragonServer;
+import dradacorus.online.server.lairs.ILair;
 import dradacorus.online.utils.SocketHelper;
 import dradacorus.online.utils.ValidationUtils;
 import dradacorus.utils.DragonConsole;
@@ -17,14 +17,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class DragonSocket extends Thread implements IDragonSocket {
+public class KoboldSocket extends Thread implements IKoboldSocket {
 
-    private final IDragonServer server;
+    private final IDragonServer dragon;
 
     private final Socket socket;
 
@@ -34,7 +35,7 @@ public class DragonSocket extends Thread implements IDragonSocket {
 
     private byte[] key = "$31$".getBytes();
 
-    private ILayer layer;
+    private ILair lair;
 
     private volatile boolean connected = false;
 
@@ -42,12 +43,14 @@ public class DragonSocket extends Thread implements IDragonSocket {
 
     private final Commands commands;
 
-    public DragonSocket(IDragonServer server, Socket socket) throws IOException {
-        this.server = server;
+    public KoboldSocket(IDragonServer dragon, Socket socket) throws IOException {
+        this.dragon = dragon;
         this.socket = socket;
-        this.commands = new Commands(server, this);
+        this.commands = new Commands(dragon, this);
         dis = new DataInputStream(socket.getInputStream());
         dos = new DataOutputStream(socket.getOutputStream());
+
+        setName("Kobold-" + ThreadLocalRandom.current().nextInt(1000, 9999));
     }
 
     @Override
@@ -57,9 +60,9 @@ public class DragonSocket extends Thread implements IDragonSocket {
                 listen();
             }
 
-            DragonConsole.WriteLine("DragonSocket", getClientName() + " disconnected from server");
+            DragonConsole.WriteLine("DragonSocket", getKoboldName() + " disconnected from server");
         } catch (IOException ex) {
-            Logger.getLogger(IDragonSocket.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(IKoboldSocket.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -70,9 +73,12 @@ public class DragonSocket extends Thread implements IDragonSocket {
 
             if (connected) {
                 execute(input);
-                //Console.WriteLine("DragonSocket", getPlayer().getName() + ": " + new String(TinkHelper.encryptBytes(input, key), StandardCharsets.US_ASCII));
-                DragonConsole.WriteLine("DragonSocket", getClientName() + ": " + new String(input));
+
+                //Console.WriteLine("KoboldSocket", getPlayer().getName() + ": " + new String(TinkHelper.encryptBytes(input, key), StandardCharsets.US_ASCII));
+                DragonConsole.WriteLine("DragonSocket", getKoboldName() + ": " + new String(input));
             }
+
+            SocketHelper.sendDiscordUpdate(this);
 
             return input;
         } catch (IOException ex) {
@@ -89,10 +95,10 @@ public class DragonSocket extends Thread implements IDragonSocket {
         if (ValidationUtils.validateCommand(input)) {
             executeCommand(getArguments(input));
         } else {
-            if (layer != null) {
-                SocketHelper.sendTo(layer, getClientName() + ": " + input);
+            if (lair != null) {
+                SocketHelper.sendTo(lair, getKoboldName() + ": " + input);
             } else {
-                SocketHelper.sendTo(server, getClientName() + ": " + input);
+                SocketHelper.sendTo(dragon, getKoboldName() + ": " + input);
             }
         }
     }
@@ -106,16 +112,16 @@ public class DragonSocket extends Thread implements IDragonSocket {
                 commands.help();
             }
             case "/setname", "/nickname", "/name" -> {
-                commands.setClientName(getArgument(arguments, 1));
+                commands.setKoboldName(getArgument(arguments, 1));
             }
-            case "/createlayer" -> {
-                commands.createLayer(getArgument(arguments, 1), getArgument(arguments, 2));
+            case "/createlair" -> {
+                commands.createLair(getArgument(arguments, 1), getArgument(arguments, 2));
             }
-            case "/joinlayer" -> {
-                commands.joinLayer(getArgument(arguments, 1), getArgument(arguments, 2));
+            case "/joinlair" -> {
+                commands.joinLair(getArgument(arguments, 1), getArgument(arguments, 2));
             }
-            case "/leavelayer" -> {
-                commands.leaveLayer();
+            case "/leavelair" -> {
+                commands.leaveLair();
             }
             case "/invite" -> {
                 commands.invite(getArgument(arguments, 1), getArgument(arguments, 2));
@@ -129,11 +135,11 @@ public class DragonSocket extends Thread implements IDragonSocket {
             case "/disconnect" -> {
                 commands.disconnect();
             }
-            case "/setlayername" -> {
-                commands.setLayerName(getArgument(arguments, 1));
+            case "/setlairname" -> {
+                commands.setLairName(getArgument(arguments, 1));
             }
-            case "/setlayerpassword" -> {
-                commands.setLayerPassword(getArgument(arguments, 1));
+            case "/setlairpassword" -> {
+                commands.setLairPassword(getArgument(arguments, 1));
             }
             case "/kick" -> {
                 commands.kick(getArgument(arguments, 1));
@@ -147,11 +153,11 @@ public class DragonSocket extends Thread implements IDragonSocket {
             case "/deop" -> {
                 commands.deop(getArgument(arguments, 1));
             }
-            case "/listclients" -> {
-                commands.listClients();
+            case "/listkobolds" -> {
+                commands.listKobolds();
             }
-            case "/listlayers" -> {
-                commands.listLayers();
+            case "/listlairs" -> {
+                commands.listLairs();
             }
 
             // Unknown
@@ -199,11 +205,16 @@ public class DragonSocket extends Thread implements IDragonSocket {
 
     @Override
     public void disconnect() {
-        if (layer != null) {
-            layer.kick(this);
+        if (lair != null) {
+            lair.kick(this);
         }
 
         this.connected = false;
+    }
+
+    @Override
+    public IDragonServer getDragon() {
+        return dragon;
     }
 
     @Override
@@ -232,13 +243,13 @@ public class DragonSocket extends Thread implements IDragonSocket {
     }
 
     @Override
-    public ILayer getLayer() {
-        return layer;
+    public ILair getLair() {
+        return lair;
     }
 
     @Override
-    public void setLayer(ILayer layer) {
-        this.layer = layer;
+    public void setLair(ILair lair) {
+        this.lair = lair;
     }
 
     @Override
@@ -247,12 +258,12 @@ public class DragonSocket extends Thread implements IDragonSocket {
     }
 
     @Override
-    public String getClientName() {
+    public String getKoboldName() {
         return getName();
     }
 
     @Override
-    public void setClientName(String name) {
+    public void setKoboldName(String name) {
         setName(name);
     }
 

@@ -4,26 +4,26 @@
  */
 package dradacorus.application;
 
-import dradacorus.online.client.DragonClient;
+import dradacorus.online.kobold.KoboldClient;
 
 public class RunClient {
 
     private static final String SERVER_IP = "localhost";
     private static final int SERVER_PORT = 1001;
-    private final static String[] ARGS = {};
+    private static final String[] ARGS = {};
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        DragonClient client = new DragonClient();
+        KoboldClient kobold = new KoboldClient();
 
-        client.setIp(SERVER_IP);
-        client.setPort(SERVER_PORT);
-        client.setArgs(ARGS);
+        kobold.setIp(SERVER_IP);
+        kobold.setPort(SERVER_PORT);
+        kobold.setArgs(ARGS);
 
-        if (!client.run()) {
+        if (!kobold.run()) {
             System.exit(1);
         }
     }
