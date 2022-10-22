@@ -97,27 +97,27 @@ public class DragonServer implements IDragonServer, ILair {
 
     @Override
     public boolean validate(IKoboldSocket kobold, byte[] key) throws IOException {
-        SocketHelper.send(kobold, key);
+        SocketHelper.Output.send(kobold, key);
         kobold.setKey(key);
 
         if (Arrays.equals(kobold.listen(), kobold.getKey())) {
             DragonConsole.WriteLine("DragonServer", kobold.getSocket().getInetAddress() + " has connected");
 
             if (LairUtils.isIPBanned(blacklist, kobold)) {
-                SocketHelper.send(kobold, "You are banned from this server");
+                SocketHelper.Output.send(kobold, "You are banned from this server");
                 return false;
             }
 
             if (hasPassword()) {
-                SocketHelper.send(kobold, "Input password to join");
+                SocketHelper.Output.send(kobold, "Input password to join");
 
                 if (!Arrays.equals(kobold.listen(), password.getBytes())) {
-                    SocketHelper.send(kobold, "Wrong password");
+                    SocketHelper.Output.send(kobold, "Wrong password");
                     return false;
                 }
             }
 
-            SocketHelper.send(kobold, "Type /? or /help for a list of commands");
+            SocketHelper.Output.send(kobold, "Type /? or /help for a list of commands");
             return true;
         }
 
@@ -130,7 +130,7 @@ public class DragonServer implements IDragonServer, ILair {
         kobold.setConnected(true);
         kobold.start();
 
-        SocketHelper.sendDiscordUpdate(kobold);
+        SocketHelper.Output.sendDiscordUpdate(kobold);
     }
 
     @Override

@@ -24,8 +24,6 @@ public class DiscordHandler {
 
     public static final String VERSION = "0.9.0";
 
-    private static final String DISCORD_APPID = "1033353477935599746";
-
     private static boolean enabled = false;
 
     /**
@@ -34,7 +32,7 @@ public class DiscordHandler {
      * @param echo  Show updates in console
      * @param appId
      */
-    public static boolean init() {
+    public static boolean init(String appId) {
         if (isEnabled()) {
             return false;
         }
@@ -43,7 +41,7 @@ public class DiscordHandler {
             System.out.println("Welcome " + user.username + "#" + user.discriminator + "!");
         }).build();
 
-        DiscordRPC.discordInitialize(DISCORD_APPID, handlers, true);
+        DiscordRPC.discordInitialize(appId, handlers, true);
         enabled = true;
 
         return true;

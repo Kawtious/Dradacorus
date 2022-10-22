@@ -22,7 +22,7 @@ public class Commands {
     }
 
     public void help() {
-        SocketHelper.send(kobold, listCommands());
+        SocketHelper.Output.send(kobold, listCommands());
     }
 
     public String listCommands() {
@@ -36,15 +36,13 @@ public class Commands {
             "/createlair", "/createroom",
             "/joinlair", "/joinroom",
             "/leavelair", "/leaveroom",
-            "/invite",
-            "/accept",
-            "/decline",
+            "/invite", "/accept", "/decline",
             "/disconnect",
-            "/setlairname", "/setroomname",
-            "/setlairpassword", "/setroompassword",
+            "/setlairname",
+            "/setlairpassword",
             "/kick", "/ban",
             "/op", "/deop",
-            "/listkobolds", "/listlairs", "/listlobbies", "/listlairs", "/listrooms"
+            "/listkobolds", "/listlairs"
         };
 
         for (String command : commandList) {
@@ -59,17 +57,17 @@ public class Commands {
 
     public void setKoboldName(String name) {
         kobold.setKoboldName(name);
-        SocketHelper.send(kobold, "Name set to " + kobold.getKoboldName());
+        SocketHelper.Output.send(kobold, "Name set to " + kobold.getKoboldName());
     }
 
     public void createLair(String name, String password) {
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "A name is required for the lair");
+            SocketHelper.Output.send(kobold, "A name is required for the lair");
             return;
         }
 
         if (LairUtils.findLairByName(dragon, name) != -1) {
-            SocketHelper.send(kobold, "A lair with that name already exists");
+            SocketHelper.Output.send(kobold, "A lair with that name already exists");
             return;
         }
 
@@ -79,60 +77,60 @@ public class Commands {
             dragon.createLair(kobold, name);
         }
 
-        SocketHelper.send(kobold, "Created lair " + kobold.getLair().getName());
+        SocketHelper.Output.send(kobold, "Created lair " + kobold.getLair().getName());
     }
 
     public void joinLair(String name, String password) {
         if (kobold.getLair() != null) {
-            SocketHelper.send(kobold, "You are already in a lair");
+            SocketHelper.Output.send(kobold, "You are already in a lair");
             return;
         }
 
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "You didn't select a valid lair");
+            SocketHelper.Output.send(kobold, "You didn't select a valid lair");
             return;
         }
 
         if (dragon.getLairs().isEmpty()) {
-            SocketHelper.send(kobold, "No lairs are available");
+            SocketHelper.Output.send(kobold, "No lairs are available");
             return;
         }
 
         int lairIdx = LairUtils.findLairByName(dragon, name);
 
         if (lairIdx == -1) {
-            SocketHelper.send(kobold, "Layer not found");
+            SocketHelper.Output.send(kobold, "Layer not found");
             return;
         }
 
         ILair lair = dragon.getLairs().get(lairIdx);
 
         if (LairUtils.isBanned(lair.getBlacklist(), kobold)) {
-            SocketHelper.send(kobold, "You are banned from the lair");
+            SocketHelper.Output.send(kobold, "You are banned from the lair");
             return;
         }
 
         if (lair.hasPassword()) {
             if (password.isEmpty()) {
-                SocketHelper.send(kobold, "A password is required to join the lair");
+                SocketHelper.Output.send(kobold, "A password is required to join the lair");
                 return;
             }
 
             if (!password.equals(lair.getPassword())) {
-                SocketHelper.send(kobold, "Wrong password");
+                SocketHelper.Output.send(kobold, "Wrong password");
                 return;
             }
         }
 
         dragon.addKoboldToLair(lair, kobold);
 
-        SocketHelper.send(kobold, "Joined lair " + kobold.getLair().getName());
-        SocketHelper.sendTo(lair, kobold.getKoboldName() + " joined the lair");
+        SocketHelper.Output.send(kobold, "Joined lair " + kobold.getLair().getName());
+        SocketHelper.Output.sendTo(lair, kobold.getKoboldName() + " joined the lair");
     }
 
     public void leaveLair() {
         if (kobold.getLair() == null) {
-            SocketHelper.send(kobold, "You are not currently in a lair");
+            SocketHelper.Output.send(kobold, "You are not currently in a lair");
             return;
         }
 
@@ -140,33 +138,33 @@ public class Commands {
 
         lair.kick(kobold);
 
-        SocketHelper.send(kobold, "Left lair " + lair.getName());
+        SocketHelper.Output.send(kobold, "Left lair " + lair.getName());
 
-        SocketHelper.sendTo(lair, kobold.getKoboldName() + " left the lair");
+        SocketHelper.Output.sendTo(lair, kobold.getKoboldName() + " left the lair");
     }
 
     public void invite(String name, String message) {
         if (kobold.getLair() == null) {
-            SocketHelper.send(kobold, "You are not currently in a lair");
+            SocketHelper.Output.send(kobold, "You are not currently in a lair");
             return;
         }
 
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "You need to specify the kobold you want to invite");
+            SocketHelper.Output.send(kobold, "You need to specify the kobold you want to invite");
             return;
         }
 
         int koboldIdx = LairUtils.findKoboldByName(dragon.getKobolds(), name);
 
         if (koboldIdx == -1) {
-            SocketHelper.send(kobold, "Kobold not found");
+            SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
         IKoboldSocket kobold1 = dragon.getKobolds().get(koboldIdx);
 
         if (kobold1.equals(kobold)) {
-            SocketHelper.send(kobold, "You cannot send an invite to yourself");
+            SocketHelper.Output.send(kobold, "You cannot send an invite to yourself");
             return;
         }
 
@@ -174,20 +172,20 @@ public class Commands {
 
         kobold1.addInvite(invite);
 
-        SocketHelper.send(kobold, "Sent invite to kobold " + kobold1.getKoboldName());
-        SocketHelper.send(kobold1, "Kobold " + kobold.getKoboldName() + " invited you to lair " + kobold.getLair().getName() + " (/accept or /decline <name of the inviter>)" + (!message.isEmpty() ? ": " + message : ""));
+        SocketHelper.Output.send(kobold, "Sent invite to kobold " + kobold1.getKoboldName());
+        SocketHelper.Output.send(kobold1, "Kobold " + kobold.getKoboldName() + " invited you to lair " + kobold.getLair().getName() + " (/accept or /decline <name of the inviter>)" + (!message.isEmpty() ? ": " + message : ""));
     }
 
     public void accept(String name) {
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "Argument not valid");
+            SocketHelper.Output.send(kobold, "Argument not valid");
             return;
         }
 
         int inviteIdx = LairUtils.findInviteByKoboldName(kobold.getInvites(), name);
 
         if (inviteIdx == -1) {
-            SocketHelper.send(kobold, "Invite not found");
+            SocketHelper.Output.send(kobold, "Invite not found");
             return;
         }
 
@@ -203,28 +201,28 @@ public class Commands {
         }
 
         IKoboldSocket inviteSender = invite.getSender();
-        SocketHelper.send(kobold, "Accepted invite of kobold " + inviteSender.getKoboldName());
+        SocketHelper.Output.send(kobold, "Accepted invite of kobold " + inviteSender.getKoboldName());
 
         kobold.removeInvite(invite);
     }
 
     public void decline(String name) {
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "Argument not valid");
+            SocketHelper.Output.send(kobold, "Argument not valid");
             return;
         }
 
         int inviteIdx = LairUtils.findInviteByKoboldName(kobold.getInvites(), name);
 
         if (inviteIdx == -1) {
-            SocketHelper.send(kobold, "Invite not found");
+            SocketHelper.Output.send(kobold, "Invite not found");
             return;
         }
 
         Invite invite = kobold.getInvites().get(inviteIdx);
 
         IKoboldSocket kobold1 = invite.getSender();
-        SocketHelper.send(kobold1, "Declined invite of kobold " + kobold1.getKoboldName());
+        SocketHelper.Output.send(kobold1, "Declined invite of kobold " + kobold1.getKoboldName());
 
         kobold1.removeInvite(invite);
     }
@@ -235,17 +233,17 @@ public class Commands {
 
     public void setLairName(String name) {
         if (kobold.getLair() == null) {
-            SocketHelper.send(kobold, "You need to be in a lair for that");
+            SocketHelper.Output.send(kobold, "You need to be in a lair for that");
             return;
         }
 
         if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
-            SocketHelper.send(kobold, "You are not an operator of this lair");
+            SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "A name is required for the lair");
+            SocketHelper.Output.send(kobold, "A name is required for the lair");
             return;
         }
 
@@ -254,12 +252,12 @@ public class Commands {
 
     public void setLairPassword(String password) {
         if (kobold.getLair() == null) {
-            SocketHelper.send(kobold, "You need to be in a lair for that");
+            SocketHelper.Output.send(kobold, "You need to be in a lair for that");
             return;
         }
 
         if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
-            SocketHelper.send(kobold, "You are not an operator of this lair");
+            SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
@@ -268,19 +266,19 @@ public class Commands {
 
     public void kick(String name) {
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "You need to select a kobold");
+            SocketHelper.Output.send(kobold, "You need to select a kobold");
             return;
         }
 
         if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
-            SocketHelper.send(kobold, "You are not an operator of this lair");
+            SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
         int koboldIdx = LairUtils.findKoboldByName(kobold.getLair().getKobolds(), name);
 
         if (koboldIdx == -1) {
-            SocketHelper.send(kobold, "Kobold not found");
+            SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
@@ -290,26 +288,26 @@ public class Commands {
 
         lair.kick(kobold1);
 
-        SocketHelper.send(kobold1, "You have been kicked from lair " + lair.getName());
+        SocketHelper.Output.send(kobold1, "You have been kicked from lair " + lair.getName());
 
-        SocketHelper.sendTo(lair, kobold1.getKoboldName() + " was kicked from the lair");
+        SocketHelper.Output.sendTo(lair, kobold1.getKoboldName() + " was kicked from the lair");
     }
 
     public void ban(String name) {
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "You need to select a kobold");
+            SocketHelper.Output.send(kobold, "You need to select a kobold");
             return;
         }
 
         if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
-            SocketHelper.send(kobold, "You are not an operator of this lair");
+            SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
         int koboldIdx = LairUtils.findKoboldByName(kobold.getLair().getKobolds(), name);
 
         if (koboldIdx == -1) {
-            SocketHelper.send(kobold, "Kobold not found");
+            SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
@@ -319,55 +317,55 @@ public class Commands {
 
         lair.ban(kobold1);
 
-        SocketHelper.send(kobold1, "You have been banned from from lair " + lair.getName());
+        SocketHelper.Output.send(kobold1, "You have been banned from from lair " + lair.getName());
 
-        SocketHelper.sendTo(lair, kobold1.getKoboldName() + " was banned from the lair");
+        SocketHelper.Output.sendTo(lair, kobold1.getKoboldName() + " was banned from the lair");
     }
 
     public void op(String name) {
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "Argument is not valid");
+            SocketHelper.Output.send(kobold, "Argument is not valid");
             return;
         }
 
         if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
-            SocketHelper.send(kobold, "You are not an operator of this lair");
+            SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
         int koboldIdx = LairUtils.findKoboldByName(kobold.getLair().getKobolds(), name);
 
         if (koboldIdx == -1) {
-            SocketHelper.send(kobold, "Kobold not found");
+            SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
         IKoboldSocket kobold1 = kobold.getLair().getKobolds().get(koboldIdx);
 
-        SocketHelper.send(kobold1, kobold1.getKoboldName() + " is now an operator");
+        SocketHelper.Output.send(kobold1, kobold1.getKoboldName() + " is now an operator");
 
         kobold1.getLair().op(kobold1);
 
-        SocketHelper.send(kobold1, kobold1.getKoboldName() + " is now an operator");
+        SocketHelper.Output.send(kobold1, kobold1.getKoboldName() + " is now an operator");
 
-        SocketHelper.send(kobold1, "You are now an operator");
+        SocketHelper.Output.send(kobold1, "You are now an operator");
     }
 
     public void deop(String name) {
         if (name.isEmpty()) {
-            SocketHelper.send(kobold, "Argument is not valid");
+            SocketHelper.Output.send(kobold, "Argument is not valid");
             return;
         }
 
         if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
-            SocketHelper.send(kobold, "You are not an operator of this lair");
+            SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
         int koboldIdx = LairUtils.findKoboldByName(kobold.getLair().getKobolds(), name);
 
         if (koboldIdx == -1) {
-            SocketHelper.send(kobold, "Kobold not found");
+            SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
@@ -375,9 +373,9 @@ public class Commands {
 
         kobold1.getLair().deop(kobold1);
 
-        SocketHelper.send(kobold1, kobold1.getKoboldName() + " is no longer an operator");
+        SocketHelper.Output.send(kobold1, kobold1.getKoboldName() + " is no longer an operator");
 
-        SocketHelper.send(kobold1, "You are no longer an operator");
+        SocketHelper.Output.send(kobold1, "You are no longer an operator");
     }
 
     public void listKobolds() {
@@ -395,12 +393,12 @@ public class Commands {
 
         sb.delete(sb.length() - 2, sb.length());
 
-        SocketHelper.send(kobold, sb.toString());
+        SocketHelper.Output.send(kobold, sb.toString());
     }
 
     public void listLairs() {
         if (kobold.getLair() != null) {
-            SocketHelper.send(kobold, "You cannot get a list of lairs inside a lair");
+            SocketHelper.Output.send(kobold, "You cannot get a list of lairs inside a lair");
             return;
         }
 
@@ -416,11 +414,11 @@ public class Commands {
 
         sb.delete(sb.length() - 2, sb.length());
 
-        SocketHelper.send(kobold, sb.toString());
+        SocketHelper.Output.send(kobold, sb.toString());
     }
 
     public void unknown(String command) {
-        SocketHelper.send(kobold, "Unknown command: " + command);
+        SocketHelper.Output.send(kobold, "Unknown command: " + command);
     }
 
     public IKoboldSocket getKobold() {

@@ -19,6 +19,8 @@ import java.util.logging.Logger;
 
 public class KoboldClient {
 
+    public static final String VERSION = "Kobold-0.7.1";
+
     private byte[] key = "$31$".getBytes();
 
     private DataInputStream dis;
@@ -91,7 +93,7 @@ public class KoboldClient {
     }
 
     private void receive() throws IOException {
-        byte[] message = SocketHelper.readBytes(dis, key);
+        byte[] message = SocketHelper.Input.readBytes(dis, key);
         processMessage(message);
     }
 
@@ -104,7 +106,7 @@ public class KoboldClient {
         }
 
         if (str.equals(SocketHelper.OBJ_INCOMING_HEADER)) {
-            Object obj = SocketHelper.getObjectFromBytes(SocketHelper.readBytes(dis, key));
+            Object obj = SocketHelper.Input.getObjectFromBytes(SocketHelper.Input.readBytes(dis, key));
 
             if (obj instanceof DiscordContainer container) {
                 if (DiscordHandler.isEnabled()) {
@@ -151,14 +153,14 @@ public class KoboldClient {
 
     private void send(byte[] message) {
         try {
-            SocketHelper.sendBytes(dos, message, key);
+            SocketHelper.Output.sendBytes(dos, message, key);
         } catch (IOException ex) {
         }
     }
 
     private void connectDiscord() {
         if (DiscordHandler.isDiscordRunning()) {
-            DiscordHandler.init();
+            DiscordHandler.init("1033353477935599746");
         }
     }
 

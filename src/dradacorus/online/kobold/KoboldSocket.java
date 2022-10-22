@@ -69,7 +69,7 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
     @Override
     public byte[] listen() {
         try {
-            byte[] input = SocketHelper.readBytes(dis, key);
+            byte[] input = SocketHelper.Input.readBytes(dis, key);
 
             if (connected) {
                 execute(input);
@@ -78,7 +78,7 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
                 DragonConsole.WriteLine("DragonSocket", getKoboldName() + ": " + new String(input));
             }
 
-            SocketHelper.sendDiscordUpdate(this);
+            SocketHelper.Output.sendDiscordUpdate(this);
 
             return input;
         } catch (IOException ex) {
@@ -96,9 +96,9 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
             executeCommand(getArguments(input));
         } else {
             if (lair != null) {
-                SocketHelper.sendTo(lair, getKoboldName() + ": " + input);
+                SocketHelper.Output.sendTo(lair, getKoboldName() + ": " + input);
             } else {
-                SocketHelper.sendTo(dragon, getKoboldName() + ": " + input);
+                SocketHelper.Output.sendTo(dragon, getKoboldName() + ": " + input);
             }
         }
     }
