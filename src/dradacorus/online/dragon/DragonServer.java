@@ -9,6 +9,7 @@ import dradacorus.online.kobold.KoboldSocket;
 import dradacorus.online.server.lairs.ILair;
 import dradacorus.online.server.lairs.Lair;
 import dradacorus.online.server.lairs.LairUtils;
+import dradacorus.online.utils.Dradacorus;
 import dradacorus.online.utils.SocketHelper;
 import dradacorus.utils.DragonConsole;
 import java.io.IOException;
@@ -57,12 +58,14 @@ public class DragonServer implements IDragonServer, ILair {
     @Override
     public void run(int port) {
         try (final ServerSocket server = new ServerSocket(port)) {
+            Dradacorus.verifyVersion();
+
             running = true;
 
             listen(server).start();
 
-            DragonConsole.WriteLine("Server", "Dragon is now flying!");
-            DragonConsole.WriteLine("Server", "Listening on port " + port);
+            DragonConsole.WriteLine("DragonServer", "Dragon is now flying!");
+            DragonConsole.WriteLine("DragonServer", "Listening on port " + port);
 
             while (running) {
             }

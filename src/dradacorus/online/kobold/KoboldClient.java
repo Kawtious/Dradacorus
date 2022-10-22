@@ -6,6 +6,7 @@ package dradacorus.online.kobold;
 
 import dradacorus.discord.DiscordContainer;
 import dradacorus.discord.DiscordHandler;
+import dradacorus.online.utils.Dradacorus;
 import dradacorus.online.utils.SocketHelper;
 import dradacorus.utils.DragonConsole;
 import java.io.DataInputStream;
@@ -18,8 +19,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class KoboldClient {
-
-    public static final String VERSION = "Kobold-0.7.1";
 
     private byte[] key = "$31$".getBytes();
 
@@ -54,6 +53,7 @@ public class KoboldClient {
         try (final Socket socket = new Socket(ip, port)) {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
+            Dradacorus.verifyVersion();
 
             receive();
 
