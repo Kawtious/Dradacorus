@@ -34,7 +34,12 @@ public class TinkHelper {
                 generateKeysetFile(keysetFilename);
             }
 
-            keysetHandle = CleartextKeysetHandle.read(JsonKeysetReader.withFile(keysetFile));
+            try {
+                keysetHandle = CleartextKeysetHandle.read(JsonKeysetReader.withFile(keysetFile));
+            } catch (IOException ex) {
+                generateKeysetFile(keysetFilename);
+                keysetHandle = CleartextKeysetHandle.read(JsonKeysetReader.withFile(keysetFile));
+            }
 
             aead = keysetHandle.getPrimitive(Aead.class);
         } catch (GeneralSecurityException | IOException ex) {
