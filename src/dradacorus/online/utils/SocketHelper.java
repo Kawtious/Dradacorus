@@ -5,9 +5,9 @@
 package dradacorus.online.utils;
 
 import dradacorus.discord.DiscordHandler;
-import dradacorus.online.dragon.IDragonServer;
-import dradacorus.online.kobold.IKoboldSocket;
-import dradacorus.online.server.lairs.ILair;
+import dradacorus.online.IDragonServer;
+import dradacorus.online.IKoboldSocket;
+import dradacorus.online.ILair;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;

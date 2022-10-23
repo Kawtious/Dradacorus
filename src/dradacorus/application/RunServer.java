@@ -4,7 +4,7 @@
  */
 package dradacorus.application;
 
-import dradacorus.online.dragon.DragonServer;
+import dradacorus.online.mods.dragon.DragonServer;
 
 public class RunServer {
 
@@ -15,11 +15,7 @@ public class RunServer {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        DragonServer dragon = new DragonServer();
-
-        dragon.setPort(PORT);
-        dragon.setName("Wyvern");
-        dragon.setPassword("");
+        DragonServer dragon = new DragonServer(PORT);
 
         if (!dragon.start()) {
             System.exit(1);

@@ -6,12 +6,18 @@ package dradacorus.online.utils;
 
 public final class ValidationUtils {
 
+    private static String ACTION_PREFIX = "/";
+
     public static boolean isNumeric(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
     }
 
-    public static boolean validateCommand(String input) {
-        return input.substring(0, 1).equals("/");
+    public static boolean validateAction(String input) {
+        return input.substring(0, 1).equals(ACTION_PREFIX);
+    }
+
+    public static void setActionPrefix(char prefix) {
+        ACTION_PREFIX = Character.toString(prefix);
     }
 
     private ValidationUtils() {

@@ -2,11 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dradacorus.online.server.lairs;
+package dradacorus.online.utils;
 
-import dradacorus.online.dragon.IDragonServer;
-import dradacorus.online.kobold.IKoboldSocket;
-import dradacorus.online.kobold.Invite;
+import dradacorus.online.ExtendableKoboldSocket.Invite;
+import dradacorus.online.IDragonServer;
+import dradacorus.online.IKoboldSocket;
+import dradacorus.online.ILair;
 import java.util.List;
 
 public class LairUtils {

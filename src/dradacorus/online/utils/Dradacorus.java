@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class Dradacorus {
 
-    private static final String VERSION = "Kobold-0.7.2.2";
+    private static final String VERSION = "Kobold-0.8.0.0";
 
     public static void verifyVersion() {
         String versionTitle = VERSION.split("-")[0];
@@ -37,23 +37,37 @@ public class Dradacorus {
             int currentMinorVersion = Integer.parseInt(currentVersionNumber.split("\\.")[2]);
             int currentPatchVersion = Integer.parseInt(currentVersionNumber.split("\\.")[3]);
 
-            if ((!versionTitle.equals(currentVersionTitle)) && (releaseVersion < currentReleaseVersion)) {
+            if (!versionTitle.equals(currentVersionTitle)) {
                 DragonConsole.Error.WriteLine("Dradacorus", "This release of Dradacorus is outdated! Please update to latest release " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
                 return;
             }
 
+            if (releaseVersion < currentReleaseVersion) {
+                DragonConsole.Error.WriteLine("Dradacorus", "This instance of Dradacorus is " + (currentReleaseVersion - releaseVersion) + " release versions behind, please update to latest version " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                return;
+            } else if (releaseVersion > currentReleaseVersion) {
+                DragonConsole.WriteLine("Dradacorus", "This instance of Dradacorus is " + (releaseVersion - currentReleaseVersion) + " release versions ahead");
+                return;
+            }
+
             if (majorVersion < currentMajorVersion) {
-                DragonConsole.Error.WriteLine("Dradacorus", "This release is " + (currentMajorVersion - majorVersion) + " major versions behind, please update to latest version " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                DragonConsole.Error.WriteLine("Dradacorus", "This instance of Dradacorus is " + (currentMajorVersion - majorVersion) + " major versions behind, please update to latest version " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                return;
+            } else if (majorVersion > currentMajorVersion) {
+                DragonConsole.WriteLine("Dradacorus", "This instance of Dradacorus is " + (majorVersion - currentMajorVersion) + " major versions ahead");
                 return;
             }
 
             if (minorVersion < currentMinorVersion) {
-                DragonConsole.WriteLine("Dradacorus", "This release is " + (currentMinorVersion - minorVersion) + " minor versions behind, latest version is " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                DragonConsole.WriteLine("Dradacorus", "This instance of Dradacorus is " + (currentMinorVersion - minorVersion) + " minor versions behind, latest version is " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                return;
+            } else if (minorVersion > currentMinorVersion) {
+                DragonConsole.WriteLine("Dradacorus", "This instance of Dradacorus is " + (minorVersion - currentMinorVersion) + " minor versions ahead");
                 return;
             }
 
             if (patchVersion < currentPatchVersion) {
-                DragonConsole.WriteLine("Dradacorus", "New patch " + currentPatchVersion + " is available at https://github.com/Kawtious/Dradacorus");
+                DragonConsole.WriteLine("Dradacorus", "New patch for Dradacorus " + currentPatchVersion + " is available at https://github.com/Kawtious/Dradacorus");
                 return;
             }
 

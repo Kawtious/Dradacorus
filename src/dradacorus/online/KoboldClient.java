@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package dradacorus.online.kobold;
+package dradacorus.online;
 
 import dradacorus.discord.DiscordContainer;
 import dradacorus.discord.DiscordHandler;
@@ -26,18 +26,18 @@ public class KoboldClient {
 
     private DataOutputStream dos;
 
-    private String ip;
+    private final String ip;
 
-    private int port;
+    private final int port;
 
     private volatile boolean connected = false;
 
-    private String[] args;
-
-    public KoboldClient() {
+    public KoboldClient(String ip, int port) {
+        this.ip = ip;
+        this.port = port;
     }
 
-    public boolean run() {
+    public boolean run(String[] args) {
         if (ip.isEmpty()) {
             return false;
         }
@@ -46,10 +46,10 @@ public class KoboldClient {
             return false;
         }
 
-        return connect(ip, port);
+        return connect(ip, port, args);
     }
 
-    private boolean connect(String ip, int port) {
+    private boolean connect(String ip, int port, String[] args) {
         try (final Socket socket = new Socket(ip, port)) {
             dis = new DataInputStream(socket.getInputStream());
             dos = new DataOutputStream(socket.getOutputStream());
@@ -80,7 +80,7 @@ public class KoboldClient {
             while (connected) {
             }
 
-            DragonConsole.Error.WriteLine("KoboldClient", "Disconnected from server");
+            DragonConsole.WriteLine("KoboldClient", "Disconnected from server");
 
             dis.close();
             dos.close();
@@ -166,22 +166,6 @@ public class KoboldClient {
 
     private void disconnect() {
         connected = false;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public String[] getArgs() {
-        return Arrays.copyOf(args, args.length);
-    }
-
-    public void setArgs(String[] args) {
-        this.args = Arrays.copyOf(args, args.length);
     }
 
 }

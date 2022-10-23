@@ -2,12 +2,11 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dradacorus.online.kobold;
+package dradacorus.online;
 
-import dradacorus.online.dragon.IDragonServer;
-import dradacorus.online.server.lairs.ILair;
 import dradacorus.online.utils.SocketHelper;
 import dradacorus.online.utils.ValidationUtils;
+import dradacorus.utils.ColorUtils;
 import dradacorus.utils.DragonConsole;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -17,13 +16,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class KoboldSocket extends Thread implements IKoboldSocket {
+public abstract class ExtendableKoboldSocket extends Thread implements IKoboldSocket {
 
     private final IDragonServer dragon;
 
@@ -41,16 +37,17 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
 
     private final List<Invite> invites = new ArrayList<>();
 
-    private final Commands commands;
+    public final ILairActions actions;
 
-    public KoboldSocket(IDragonServer dragon, Socket socket) throws IOException {
+    public ExtendableKoboldSocket(IDragonServer dragon, ILairActions actions, Socket socket) throws IOException {
         this.dragon = dragon;
         this.socket = socket;
-        this.commands = new Commands(dragon, this);
+        this.actions = actions;
         dis = new DataInputStream(socket.getInputStream());
         dos = new DataOutputStream(socket.getOutputStream());
 
-        setName("Kobold-" + ThreadLocalRandom.current().nextInt(1000, 9999));
+        String koboldColor = ColorUtils.getRandomColorName();
+        setName(koboldColor + " Kobold");
     }
 
     @Override
@@ -74,7 +71,7 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
             if (connected) {
                 execute(input);
 
-                //Console.WriteLine("KoboldSocket", getPlayer().getName() + ": " + new String(TinkHelper.encryptBytes(input, key), StandardCharsets.US_ASCII));
+                //Console.WriteLine("ExtendableKoboldSocket", getPlayer().getName() + ": " + new String(TinkHelper.encryptBytes(input, key), StandardCharsets.US_ASCII));
                 DragonConsole.WriteLine("DragonSocket", getKoboldName() + ": " + new String(input));
             }
 
@@ -92,11 +89,11 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
     public void execute(byte[] msg) throws IOException {
         String input = new String(msg);
 
-        if (ValidationUtils.validateCommand(input)) {
-            executeCommand(getArguments(input));
+        if (ValidationUtils.validateAction(input)) {
+            actions.executeAction(this, input);
         } else {
-            if (lair != null) {
-                SocketHelper.Output.sendTo(lair, getKoboldName() + ": " + input);
+            if (getLair() != null) {
+                SocketHelper.Output.sendTo(getLair(), getKoboldName() + ": " + input);
             } else {
                 SocketHelper.Output.sendTo(dragon, getKoboldName() + ": " + input);
             }
@@ -104,88 +101,8 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
     }
 
     @Override
-    public void executeCommand(List<String> arguments) {
-        String execute = getArgument(arguments, 0);
-
-        switch (execute) {
-            case "/help", "/?" -> {
-                commands.help();
-            }
-            case "/setname", "/nickname", "/name" -> {
-                commands.setKoboldName(getArgument(arguments, 1));
-            }
-            case "/createlair" -> {
-                commands.createLair(getArgument(arguments, 1), getArgument(arguments, 2));
-            }
-            case "/joinlair" -> {
-                commands.joinLair(getArgument(arguments, 1), getArgument(arguments, 2));
-            }
-            case "/leavelair" -> {
-                commands.leaveLair();
-            }
-            case "/invite" -> {
-                commands.invite(getArgument(arguments, 1), getArgument(arguments, 2));
-            }
-            case "/accept" -> {
-                commands.accept(getArgument(arguments, 1));
-            }
-            case "/decline" -> {
-                commands.decline(getArgument(arguments, 1));
-            }
-            case "/disconnect" -> {
-                commands.disconnect();
-            }
-            case "/setlairname" -> {
-                commands.setLairName(getArgument(arguments, 1));
-            }
-            case "/setlairpassword" -> {
-                commands.setLairPassword(getArgument(arguments, 1));
-            }
-            case "/kick" -> {
-                commands.kick(getArgument(arguments, 1));
-            }
-            case "/ban" -> {
-                commands.ban(getArgument(arguments, 1));
-            }
-            case "/op" -> {
-                commands.op(getArgument(arguments, 1));
-            }
-            case "/deop" -> {
-                commands.deop(getArgument(arguments, 1));
-            }
-            case "/listkobolds" -> {
-                commands.listKobolds();
-            }
-            case "/listlairs" -> {
-                commands.listLairs();
-            }
-
-            // Unknown
-            default -> {
-                commands.unknown(getArgument(arguments, 0));
-            }
-        }
-    }
-
-    @Override
-    public List<String> getArguments(String str) {
-        List<String> arguments = new ArrayList<>();
-
-        Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(str);
-        while (m.find()) {
-            arguments.add(m.group(1).replace("\"", ""));
-        }
-
-        return arguments;
-    }
-
-    @Override
-    public String getArgument(List<String> arguments, int index) {
-        if (index < 0 || arguments.isEmpty() || index >= arguments.size()) {
-            return "";
-        }
-
-        return arguments.get(index);
+    public Invite createInvite() {
+        return new Invite(this, this.getLair());
     }
 
     @Override
@@ -205,8 +122,8 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
 
     @Override
     public void disconnect() {
-        if (lair != null) {
-            lair.kick(this);
+        if (getLair() != null) {
+            getLair().kick(this);
         }
 
         this.connected = false;
@@ -253,6 +170,9 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
     }
 
     @Override
+    public abstract ILairActions getActions();
+
+    @Override
     public void setConnected(boolean connected) {
         this.connected = connected;
     }
@@ -265,6 +185,27 @@ public class KoboldSocket extends Thread implements IKoboldSocket {
     @Override
     public void setKoboldName(String name) {
         setName(name);
+    }
+
+    public class Invite {
+
+        private final IKoboldSocket sender;
+
+        private final ILair lair;
+
+        public Invite(IKoboldSocket sender, ILair layer) {
+            this.sender = sender;
+            this.lair = layer;
+        }
+
+        public IKoboldSocket getSender() {
+            return sender;
+        }
+
+        public ILair getLair() {
+            return lair;
+        }
+
     }
 
 }

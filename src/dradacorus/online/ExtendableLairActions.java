@@ -2,35 +2,120 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dradacorus.online.kobold;
+package dradacorus.online;
 
-import dradacorus.online.dragon.IDragonServer;
-import dradacorus.online.server.lairs.ILair;
-import dradacorus.online.server.lairs.LairUtils;
+import dradacorus.online.ExtendableKoboldSocket.Invite;
+import dradacorus.online.utils.LairUtils;
 import dradacorus.online.utils.SocketHelper;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class Commands {
+public abstract class ExtendableLairActions implements ILairActions {
 
     private final IDragonServer dragon;
 
-    private final IKoboldSocket kobold;
-
-    public Commands(IDragonServer dragon, IKoboldSocket kobold) {
+    public ExtendableLairActions(IDragonServer dragon) {
         this.dragon = dragon;
-        this.kobold = kobold;
     }
 
-    public void help() {
-        SocketHelper.Output.send(kobold, listCommands());
+    public List<String> getArguments(String str) {
+        List<String> arguments = new ArrayList<>();
+
+        Matcher m = Pattern.compile("([^\"]\\S*|\".+?\")\\s*").matcher(str);
+        while (m.find()) {
+            arguments.add(m.group(1).replace("\"", ""));
+        }
+
+        return arguments;
     }
 
-    public String listCommands() {
+    public String getArgument(List<String> arguments, int index) {
+        if (index < 0 || arguments.isEmpty() || index >= arguments.size()) {
+            return "";
+        }
+
+        return arguments.get(index);
+    }
+
+    @Override
+    public void executeAction(IKoboldSocket kobold, String input) {
+        List<String> arguments = getArguments(input);
+        String execute = getArgument(arguments, 0);
+
+        switch (execute) {
+            case "/help", "/?" -> {
+                help(kobold);
+            }
+            case "/setname", "/nickname", "/name" -> {
+                setKoboldName(kobold, getArgument(arguments, 1));
+            }
+            case "/createlair" -> {
+                createLair(kobold, getArgument(arguments, 1), getArgument(arguments, 2));
+            }
+            case "/joinlair" -> {
+                joinLair(kobold, getArgument(arguments, 1), getArgument(arguments, 2));
+            }
+            case "/leavelair" -> {
+                leaveLair(kobold);
+            }
+            case "/invite" -> {
+                invite(kobold, getArgument(arguments, 1), getArgument(arguments, 2));
+            }
+            case "/accept" -> {
+                accept(kobold, getArgument(arguments, 1));
+            }
+            case "/decline" -> {
+                decline(kobold, getArgument(arguments, 1));
+            }
+            case "/disconnect" -> {
+                disconnect(kobold);
+            }
+            case "/setlairname" -> {
+                setLairName(kobold, getArgument(arguments, 1));
+            }
+            case "/setlairpassword" -> {
+                setLairPassword(kobold, getArgument(arguments, 1));
+            }
+            case "/kick" -> {
+                kick(kobold, getArgument(arguments, 1));
+            }
+            case "/ban" -> {
+                ban(kobold, getArgument(arguments, 1));
+            }
+            case "/op" -> {
+                op(kobold, getArgument(arguments, 1));
+            }
+            case "/deop" -> {
+                deop(kobold, getArgument(arguments, 1));
+            }
+            case "/listkobolds" -> {
+                listKobolds(kobold);
+            }
+            case "/listlairs" -> {
+                listLairs(kobold);
+            }
+
+            // Unknown
+            default -> {
+                unknown(kobold, getArgument(arguments, 0));
+            }
+        }
+    }
+
+    @Override
+    public void help(IKoboldSocket kobold) {
+        SocketHelper.Output.send(kobold, listActions());
+    }
+
+    @Override
+    public String listActions() {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("List of commands:\n");
+        sb.append("List of actions:\n");
 
-        String[] commandList = {
+        String[] actionsList = {
             "/help",
             "/setname",
             "/createlair", "/createroom",
@@ -45,8 +130,8 @@ public class Commands {
             "/listkobolds", "/listlairs"
         };
 
-        for (String command : commandList) {
-            sb.append(command).append(", ");
+        for (String action : actionsList) {
+            sb.append(action).append(", ");
         }
 
         sb.delete(sb.length() - 2, sb.length());
@@ -55,12 +140,19 @@ public class Commands {
         return sb.toString();
     }
 
-    public void setKoboldName(String name) {
+    @Override
+    public void setKoboldName(IKoboldSocket kobold, String name) {
         kobold.setKoboldName(name);
         SocketHelper.Output.send(kobold, "Name set to " + kobold.getKoboldName());
     }
 
-    public void createLair(String name, String password) {
+    @Override
+    public void createLair(IKoboldSocket kobold, String name, String password) {
+        if (kobold.getLair() != null) {
+            SocketHelper.Output.send(kobold, "You are already in a lair");
+            return;
+        }
+
         if (name.isEmpty()) {
             SocketHelper.Output.send(kobold, "A name is required for the lair");
             return;
@@ -80,7 +172,8 @@ public class Commands {
         SocketHelper.Output.send(kobold, "Created lair " + kobold.getLair().getName());
     }
 
-    public void joinLair(String name, String password) {
+    @Override
+    public void joinLair(IKoboldSocket kobold, String name, String password) {
         if (kobold.getLair() != null) {
             SocketHelper.Output.send(kobold, "You are already in a lair");
             return;
@@ -128,7 +221,8 @@ public class Commands {
         SocketHelper.Output.sendTo(lair, kobold.getKoboldName() + " joined the lair");
     }
 
-    public void leaveLair() {
+    @Override
+    public void leaveLair(IKoboldSocket kobold) {
         if (kobold.getLair() == null) {
             SocketHelper.Output.send(kobold, "You are not currently in a lair");
             return;
@@ -143,7 +237,8 @@ public class Commands {
         SocketHelper.Output.sendTo(lair, kobold.getKoboldName() + " left the lair");
     }
 
-    public void invite(String name, String message) {
+    @Override
+    public void invite(IKoboldSocket kobold, String name, String message) {
         if (kobold.getLair() == null) {
             SocketHelper.Output.send(kobold, "You are not currently in a lair");
             return;
@@ -168,7 +263,7 @@ public class Commands {
             return;
         }
 
-        Invite invite = new Invite(kobold, kobold.getLair());
+        Invite invite = kobold.createInvite();
 
         kobold1.addInvite(invite);
 
@@ -176,9 +271,10 @@ public class Commands {
         SocketHelper.Output.send(kobold1, "Kobold " + kobold.getKoboldName() + " invited you to lair " + kobold.getLair().getName() + " (/accept or /decline " + kobold.getKoboldName() + ")" + (!message.isEmpty() ? ": " + message : ""));
     }
 
-    public void accept(String name) {
+    @Override
+    public void accept(IKoboldSocket kobold, String name) {
         if (name.isEmpty()) {
-            SocketHelper.Output.send(kobold, "Argument not valid");
+            SocketHelper.Output.send(kobold, "You need to specify the name of the inviter");
             return;
         }
 
@@ -193,11 +289,11 @@ public class Commands {
 
         if (kobold.getLair() != null) { //if kobold is in a lair
             if (!kobold.getLair().equals(invite.getLair())) { //if it's not the same lair as the invite's
-                leaveLair();
-                joinLair(invite.getLair().getName(), invite.getLair().getPassword());
+                leaveLair(kobold);
+                joinLair(kobold, invite.getLair().getName(), invite.getLair().getPassword());
             }
         } else {
-            joinLair(invite.getLair().getName(), invite.getLair().getPassword());
+            joinLair(kobold, invite.getLair().getName(), invite.getLair().getPassword());
         }
 
         IKoboldSocket inviteSender = invite.getSender();
@@ -206,9 +302,10 @@ public class Commands {
         kobold.removeInvite(invite);
     }
 
-    public void decline(String name) {
+    @Override
+    public void decline(IKoboldSocket kobold, String name) {
         if (name.isEmpty()) {
-            SocketHelper.Output.send(kobold, "Argument not valid");
+            SocketHelper.Output.send(kobold, "You need to specify the name of the inviter");
             return;
         }
 
@@ -227,17 +324,20 @@ public class Commands {
         kobold1.removeInvite(invite);
     }
 
-    public void disconnect() {
+    @Override
+    public void disconnect(IKoboldSocket kobold) {
         kobold.disconnect();
     }
 
-    public void setLairName(String name) {
-        if (kobold.getLair() == null) {
-            SocketHelper.Output.send(kobold, "You need to be in a lair for that");
-            return;
+    @Override
+    public void setLairName(IKoboldSocket kobold, String name) {
+        ILair lair = (ILair) dragon;
+
+        if (kobold.getLair() != null) {
+            lair = kobold.getLair();
         }
 
-        if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
+        if (!LairUtils.isOperator(lair.getOperators(), kobold)) {
             SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
@@ -247,44 +347,58 @@ public class Commands {
             return;
         }
 
-        kobold.getLair().setName(name);
+        lair.setName(name);
     }
 
-    public void setLairPassword(String password) {
-        if (kobold.getLair() == null) {
-            SocketHelper.Output.send(kobold, "You need to be in a lair for that");
-            return;
+    @Override
+    public void setLairPassword(IKoboldSocket kobold, String password) {
+        ILair lair = (ILair) dragon;
+
+        if (kobold.getLair() != null) {
+            lair = kobold.getLair();
         }
 
-        if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
+        if (!LairUtils.isOperator(lair.getOperators(), kobold)) {
             SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
-        kobold.getLair().setName(password);
+        lair.setName(password);
     }
 
-    public void kick(String name) {
+    @Override
+    public void kick(IKoboldSocket kobold, String name) {
         if (name.isEmpty()) {
-            SocketHelper.Output.send(kobold, "You need to select a kobold");
+            SocketHelper.Output.send(kobold, "You need to specify the name of a kobold");
             return;
         }
 
-        if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
+        ILair lair = (ILair) dragon;
+
+        if (kobold.getLair() != null) {
+            lair = kobold.getLair();
+        }
+
+        List<IKoboldSocket> kobolds = lair.getKobolds();
+
+        if (!LairUtils.isOperator(lair.getOperators(), kobold)) {
             SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
-        int koboldIdx = LairUtils.findKoboldByName(kobold.getLair().getKobolds(), name);
+        int koboldIdx = LairUtils.findKoboldByName(kobolds, name);
 
         if (koboldIdx == -1) {
             SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
-        IKoboldSocket kobold1 = kobold.getLair().getKobolds().get(koboldIdx);
+        IKoboldSocket kobold1 = kobolds.get(koboldIdx);
 
-        ILair lair = kobold1.getLair();
+        if (kobold1.equals(kobold)) {
+            SocketHelper.Output.send(kobold, "You cannot kick yourself");
+            return;
+        }
 
         lair.kick(kobold1);
 
@@ -293,54 +407,85 @@ public class Commands {
         SocketHelper.Output.sendTo(lair, kobold1.getKoboldName() + " was kicked from the lair");
     }
 
-    public void ban(String name) {
+    @Override
+    public void ban(IKoboldSocket kobold, String name) {
         if (name.isEmpty()) {
-            SocketHelper.Output.send(kobold, "You need to select a kobold");
+            SocketHelper.Output.send(kobold, "You need to specify the name of a kobold");
             return;
         }
 
-        if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
+        ILair lair = (ILair) dragon;
+
+        if (kobold.getLair() != null) {
+            lair = kobold.getLair();
+        }
+
+        List<IKoboldSocket> kobolds = lair.getKobolds();
+
+        if (!LairUtils.isOperator(lair.getOperators(), kobold)) {
             SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
-        int koboldIdx = LairUtils.findKoboldByName(kobold.getLair().getKobolds(), name);
+        int koboldIdx = LairUtils.findKoboldByName(kobolds, name);
 
         if (koboldIdx == -1) {
             SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
-        IKoboldSocket kobold1 = kobold.getLair().getKobolds().get(koboldIdx);
+        IKoboldSocket kobold1 = kobolds.get(koboldIdx);
 
-        ILair lair = kobold1.getLair();
+        if (kobold1.equals(kobold)) {
+            SocketHelper.Output.send(kobold, "You cannot ban yourself");
+            return;
+        }
 
         lair.ban(kobold1);
 
-        SocketHelper.Output.send(kobold1, "You have been banned from from lair " + lair.getName());
+        SocketHelper.Output.send(kobold1, "You have been banned from lair " + lair.getName());
 
         SocketHelper.Output.sendTo(lair, kobold1.getKoboldName() + " was banned from the lair");
     }
 
-    public void op(String name) {
+    @Override
+    public void op(IKoboldSocket kobold, String name) {
         if (name.isEmpty()) {
-            SocketHelper.Output.send(kobold, "Argument is not valid");
+            SocketHelper.Output.send(kobold, "You need to specify the name of a kobold");
             return;
         }
 
-        if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
+        ILair lair = (ILair) dragon;
+
+        if (kobold.getLair() != null) {
+            lair = kobold.getLair();
+        }
+
+        List<IKoboldSocket> kobolds = lair.getKobolds();
+
+        if (!LairUtils.isOperator(lair.getOperators(), kobold)) {
             SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
-        int koboldIdx = LairUtils.findKoboldByName(kobold.getLair().getKobolds(), name);
+        int koboldIdx = LairUtils.findKoboldByName(kobolds, name);
 
         if (koboldIdx == -1) {
             SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
-        IKoboldSocket kobold1 = kobold.getLair().getKobolds().get(koboldIdx);
+        IKoboldSocket kobold1 = kobolds.get(koboldIdx);
+
+        if (kobold1.equals(kobold)) {
+            SocketHelper.Output.send(kobold, "You cannot make yourself an operator");
+            return;
+        }
+
+        if (LairUtils.isOperator(lair.getOperators(), kobold)) {
+            SocketHelper.Output.send(kobold, kobold1.getKoboldName() + " is already an operator");
+            return;
+        }
 
         SocketHelper.Output.send(kobold1, kobold1.getKoboldName() + " is now an operator");
 
@@ -351,34 +496,54 @@ public class Commands {
         SocketHelper.Output.send(kobold1, "You are now an operator");
     }
 
-    public void deop(String name) {
+    @Override
+    public void deop(IKoboldSocket kobold, String name) {
         if (name.isEmpty()) {
-            SocketHelper.Output.send(kobold, "Argument is not valid");
+            SocketHelper.Output.send(kobold, "You need to specify the name of a kobold");
             return;
         }
 
-        if (!LairUtils.isOperator(kobold.getLair().getOperators(), kobold)) {
+        ILair lair = (ILair) dragon;
+
+        if (kobold.getLair() != null) {
+            lair = kobold.getLair();
+        }
+
+        List<IKoboldSocket> kobolds = lair.getKobolds();
+
+        if (!LairUtils.isOperator(lair.getOperators(), kobold)) {
             SocketHelper.Output.send(kobold, "You are not an operator of this lair");
             return;
         }
 
-        int koboldIdx = LairUtils.findKoboldByName(kobold.getLair().getKobolds(), name);
+        int koboldIdx = LairUtils.findKoboldByName(kobolds, name);
 
         if (koboldIdx == -1) {
             SocketHelper.Output.send(kobold, "Kobold not found");
             return;
         }
 
-        IKoboldSocket kobold1 = kobold.getLair().getKobolds().get(koboldIdx);
+        IKoboldSocket kobold1 = kobolds.get(koboldIdx);
 
-        kobold1.getLair().deop(kobold1);
+        if (kobold1.equals(kobold)) {
+            SocketHelper.Output.send(kobold, "You cannot remove your own operator privileges");
+            return;
+        }
+
+        if (!LairUtils.isOperator(lair.getOperators(), kobold)) {
+            SocketHelper.Output.send(kobold, kobold1.getKoboldName() + " is not an operator");
+            return;
+        }
+
+        lair.deop(kobold1);
 
         SocketHelper.Output.send(kobold1, kobold1.getKoboldName() + " is no longer an operator");
 
         SocketHelper.Output.send(kobold1, "You are no longer an operator");
     }
 
-    public void listKobolds() {
+    @Override
+    public void listKobolds(IKoboldSocket kobold) {
         StringBuilder sb = new StringBuilder();
 
         List<IKoboldSocket> kobolds = dragon.getKobolds();
@@ -396,7 +561,8 @@ public class Commands {
         SocketHelper.Output.send(kobold, sb.toString());
     }
 
-    public void listLairs() {
+    @Override
+    public void listLairs(IKoboldSocket kobold) {
         if (kobold.getLair() != null) {
             SocketHelper.Output.send(kobold, "You cannot get a list of lairs inside a lair");
             return;
@@ -417,12 +583,9 @@ public class Commands {
         SocketHelper.Output.send(kobold, sb.toString());
     }
 
-    public void unknown(String command) {
-        SocketHelper.Output.send(kobold, "Unknown command: " + command);
-    }
-
-    public IKoboldSocket getKobold() {
-        return kobold;
+    @Override
+    public void unknown(IKoboldSocket kobold, String action) {
+        SocketHelper.Output.send(kobold, "Unknown action: " + action);
     }
 
 }

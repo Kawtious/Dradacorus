@@ -2,15 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package dradacorus.online.dragon;
+package dradacorus.online;
 
-import dradacorus.online.kobold.IKoboldSocket;
-import dradacorus.online.kobold.KoboldSocket;
-import dradacorus.online.server.lairs.ILair;
-import dradacorus.online.server.lairs.Lair;
-import dradacorus.online.server.lairs.LairUtils;
 import dradacorus.online.utils.Dradacorus;
+import dradacorus.online.utils.LairUtils;
 import dradacorus.online.utils.SocketHelper;
+import dradacorus.utils.ColorUtils;
 import dradacorus.utils.DragonConsole;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -21,11 +18,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class DragonServer implements IDragonServer, ILair {
+public abstract class ExtendableDragonServer implements IDragonServer, ILair {
 
     private UUID id = UUID.randomUUID();
 
-    private String name = "";
+    private String name = ColorUtils.getRandomColorName() + " Dragon";
 
     private String password = "";
 
@@ -37,11 +34,12 @@ public class DragonServer implements IDragonServer, ILair {
 
     private final List<ILair> lairs = Collections.synchronizedList(new ArrayList<>());
 
-    private int port;
+    private final int port;
 
     private volatile boolean running = false;
 
-    public DragonServer() {
+    public ExtendableDragonServer(int port) {
+        this.port = port;
     }
 
     @Override
@@ -64,7 +62,7 @@ public class DragonServer implements IDragonServer, ILair {
 
             listen(server).start();
 
-            DragonConsole.WriteLine("DragonServer", "Dragon is now flying!");
+            DragonConsole.WriteLine("DragonServer", name + " is now flying!");
             DragonConsole.WriteLine("DragonServer", "Listening on port " + port);
 
             while (running) {
@@ -94,9 +92,7 @@ public class DragonServer implements IDragonServer, ILair {
     }
 
     @Override
-    public IKoboldSocket createKoboldSocket(Socket socket) throws IOException {
-        return new KoboldSocket(this, socket);
-    }
+    public abstract IKoboldSocket createKoboldSocket(Socket socket) throws IOException;
 
     @Override
     public boolean validate(IKoboldSocket kobold, byte[] key) throws IOException {
@@ -120,7 +116,7 @@ public class DragonServer implements IDragonServer, ILair {
                 }
             }
 
-            SocketHelper.Output.send(kobold, "Type /? or /help for a list of commands");
+            SocketHelper.Output.send(kobold, "Type /? or /help for a list of actions");
             return true;
         }
 
@@ -148,9 +144,7 @@ public class DragonServer implements IDragonServer, ILair {
     }
 
     @Override
-    public void createLair(IKoboldSocket kobold, String name, String password) {
-        addLair(new Lair(this, name, password), kobold);
-    }
+    public abstract void createLair(IKoboldSocket kobold, String name, String password);
 
     @Override
     public void addLair(ILair lair, IKoboldSocket kobold) {
@@ -179,13 +173,18 @@ public class DragonServer implements IDragonServer, ILair {
     }
 
     @Override
-    public List<ILair> getLairs() {
-        return Collections.unmodifiableList(lairs);
+    public boolean hasPassword() {
+        return !password.isEmpty();
     }
 
     @Override
-    public void setPort(int port) {
-        this.port = port;
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public List<ILair> getLairs() {
+        return Collections.unmodifiableList(lairs);
     }
 
     @Override
@@ -227,16 +226,6 @@ public class DragonServer implements IDragonServer, ILair {
     @Override
     public void setId(UUID id) {
         this.id = id;
-    }
-
-    @Override
-    public boolean hasPassword() {
-        return !password.isEmpty();
-    }
-
-    @Override
-    public String getPassword() {
-        return password;
     }
 
     @Override

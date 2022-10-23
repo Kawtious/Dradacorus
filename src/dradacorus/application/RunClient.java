@@ -4,7 +4,7 @@
  */
 package dradacorus.application;
 
-import dradacorus.online.kobold.KoboldClient;
+import dradacorus.online.KoboldClient;
 
 public class RunClient {
 
@@ -17,13 +17,9 @@ public class RunClient {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        KoboldClient kobold = new KoboldClient();
+        KoboldClient kobold = new KoboldClient(SERVER_IP, SERVER_PORT);
 
-        kobold.setIp(SERVER_IP);
-        kobold.setPort(SERVER_PORT);
-        kobold.setArgs(ARGS);
-
-        if (!kobold.run()) {
+        if (!kobold.run(ARGS)) {
             System.exit(1);
         }
     }

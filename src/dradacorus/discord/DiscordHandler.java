@@ -5,7 +5,7 @@
  */
 package dradacorus.discord;
 
-import dradacorus.online.kobold.IKoboldSocket;
+import dradacorus.online.IKoboldSocket;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;

@@ -2,16 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dradacorus.online.server.lairs;
+package dradacorus.online;
 
-import dradacorus.online.dragon.IDragonServer;
-import dradacorus.online.kobold.IKoboldSocket;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public class Lair implements ILair {
+public abstract class ExtendableLair implements ILair {
 
     private final IDragonServer dragon;
 
@@ -27,12 +25,12 @@ public class Lair implements ILair {
 
     private final List<IKoboldSocket> blacklist = Collections.synchronizedList(new ArrayList<>());
 
-    public Lair(IDragonServer dragon, String name) {
+    public ExtendableLair(IDragonServer dragon, String name) {
         this.dragon = dragon;
         this.name = name;
     }
 
-    public Lair(IDragonServer dragon, String name, String password) {
+    public ExtendableLair(IDragonServer dragon, String name, String password) {
         this.dragon = dragon;
         this.name = name;
         this.password = password;

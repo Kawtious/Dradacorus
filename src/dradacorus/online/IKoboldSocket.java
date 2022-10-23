@@ -2,10 +2,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package dradacorus.online.kobold;
+package dradacorus.online;
 
-import dradacorus.online.dragon.IDragonServer;
-import dradacorus.online.server.lairs.ILair;
+import dradacorus.online.ExtendableKoboldSocket.Invite;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -22,11 +21,7 @@ public interface IKoboldSocket {
 
     public void execute(byte[] msg) throws IOException;
 
-    public void executeCommand(List<String> arguments);
-
-    public List<String> getArguments(String input);
-
-    public String getArgument(List<String> arguments, int index);
+    public Invite createInvite();
 
     public void addInvite(Invite invite);
 
@@ -48,9 +43,11 @@ public interface IKoboldSocket {
 
     public void setKey(byte[] key);
 
-    public ILair getLair();
+    public abstract ILair getLair();
 
     public void setLair(ILair lair);
+
+    public abstract ILairActions getActions();
 
     public void setConnected(boolean connected);
 
