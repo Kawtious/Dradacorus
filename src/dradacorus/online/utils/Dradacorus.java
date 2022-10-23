@@ -22,7 +22,7 @@ public class Dradacorus {
         int minorVersion = Integer.parseInt(versionNumber.split("\\.")[2]);
         int patchVersion = Integer.parseInt(versionNumber.split("\\.")[3]);
 
-        DragonConsole.WriteLine("Dradacorus", "Running Dradacorus " + versionTitle + " on version " + versionNumber);
+        DragonConsole.WriteLine(Dradacorus.class, "Running Dradacorus " + versionTitle + " on version " + versionNumber);
 
         try {
             URL getVersion = new URL("https://raw.githubusercontent.com/Kawtious/Dradacorus/main/VERSION");
@@ -38,46 +38,46 @@ public class Dradacorus {
             int currentPatchVersion = Integer.parseInt(currentVersionNumber.split("\\.")[3]);
 
             if (!versionTitle.equals(currentVersionTitle)) {
-                DragonConsole.Error.WriteLine("Dradacorus", "This release of Dradacorus is outdated! Please update to latest release " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                DragonConsole.Error.WriteLine(Dradacorus.class, "This release of Dradacorus is outdated! Please update to latest release " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
                 return;
             }
 
             if (releaseVersion < currentReleaseVersion) {
-                DragonConsole.Error.WriteLine("Dradacorus", "This instance of Dradacorus is " + (currentReleaseVersion - releaseVersion) + " release versions behind, please update to latest version " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                DragonConsole.Error.WriteLine(Dradacorus.class, "This instance of Dradacorus is " + (currentReleaseVersion - releaseVersion) + " release versions behind, please update to latest version " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
                 return;
             } else if (releaseVersion > currentReleaseVersion) {
-                DragonConsole.WriteLine("Dradacorus", "This instance of Dradacorus is " + (releaseVersion - currentReleaseVersion) + " release versions ahead");
+                DragonConsole.WriteLine(Dradacorus.class, "This instance of Dradacorus is " + (releaseVersion - currentReleaseVersion) + " release versions ahead");
                 return;
             }
 
             if (majorVersion < currentMajorVersion) {
-                DragonConsole.Error.WriteLine("Dradacorus", "This instance of Dradacorus is " + (currentMajorVersion - majorVersion) + " major versions behind, please update to latest version " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                DragonConsole.Error.WriteLine(Dradacorus.class, "This instance of Dradacorus is " + (currentMajorVersion - majorVersion) + " major versions behind, please update to latest version " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
                 return;
             } else if (majorVersion > currentMajorVersion) {
-                DragonConsole.WriteLine("Dradacorus", "This instance of Dradacorus is " + (majorVersion - currentMajorVersion) + " major versions ahead");
+                DragonConsole.WriteLine(Dradacorus.class, "This instance of Dradacorus is " + (majorVersion - currentMajorVersion) + " major versions ahead");
                 return;
             }
 
             if (minorVersion < currentMinorVersion) {
-                DragonConsole.WriteLine("Dradacorus", "This instance of Dradacorus is " + (currentMinorVersion - minorVersion) + " minor versions behind, latest version is " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
+                DragonConsole.WriteLine(Dradacorus.class, "This instance of Dradacorus is " + (currentMinorVersion - minorVersion) + " minor versions behind, latest version is " + currentGithubVersion + " at https://github.com/Kawtious/Dradacorus");
                 return;
             } else if (minorVersion > currentMinorVersion) {
-                DragonConsole.WriteLine("Dradacorus", "This instance of Dradacorus is " + (minorVersion - currentMinorVersion) + " minor versions ahead");
+                DragonConsole.WriteLine(Dradacorus.class, "This instance of Dradacorus is " + (minorVersion - currentMinorVersion) + " minor versions ahead");
                 return;
             }
 
             if (patchVersion < currentPatchVersion) {
-                DragonConsole.WriteLine("Dradacorus", "New patch for Dradacorus " + currentPatchVersion + " is available at https://github.com/Kawtious/Dradacorus");
+                DragonConsole.WriteLine(Dradacorus.class, "New patch for Dradacorus " + currentPatchVersion + " is available at https://github.com/Kawtious/Dradacorus");
                 return;
             }
 
-            DragonConsole.WriteLine("Dradacorus", "Dradacorus is up to date!");
+            DragonConsole.WriteLine(Dradacorus.class, "Dradacorus is up to date!");
         } catch (IOException ex) {
             // there was some connection problem, or the file did not exist on the server,
             // or your URL was not in the right format.
             // think about what to do now, and put it here.
             // for now, close the program.
-            DragonConsole.Error.WriteLine("Dradacorus", "Error: Could not verify Dradacorus version");
+            DragonConsole.Error.WriteLine(Dradacorus.class, "Error: Could not verify Dradacorus version");
         }
     }
 

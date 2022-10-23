@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-public abstract class ExtendableDragonServer implements IDragonServer, ILair {
+public abstract class ExtendableDragonServer implements IDragonServer {
 
     private UUID id = UUID.randomUUID();
 
@@ -62,8 +62,8 @@ public abstract class ExtendableDragonServer implements IDragonServer, ILair {
 
             listen(server).start();
 
-            DragonConsole.WriteLine("DragonServer", name + " is now flying!");
-            DragonConsole.WriteLine("DragonServer", "Listening on port " + port);
+            DragonConsole.WriteLine(this.getClass(), name + " is now flying!");
+            DragonConsole.WriteLine(this.getClass(), "Listening on port " + port);
 
             while (running) {
             }
@@ -100,7 +100,8 @@ public abstract class ExtendableDragonServer implements IDragonServer, ILair {
         kobold.setKey(key);
 
         if (Arrays.equals(kobold.listen(), kobold.getKey())) {
-            DragonConsole.WriteLine("DragonServer", kobold.getSocket().getInetAddress() + " has connected");
+            DragonConsole.WriteLine(this.getClass(), kobold.getKoboldName() + " has connected");
+            SocketHelper.Output.sendTo(this, kobold.getKoboldName() + " has connected");
 
             if (LairUtils.isIPBanned(blacklist, kobold)) {
                 SocketHelper.Output.send(kobold, "You are banned from this server");

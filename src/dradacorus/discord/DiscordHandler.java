@@ -22,7 +22,7 @@ import net.arikia.dev.drpc.DiscordRichPresence;
  */
 public class DiscordHandler {
 
-    public static final String VERSION = "0.9.0";
+    public static final String VERSION = "0.9.1";
 
     private static boolean enabled = false;
 
@@ -124,7 +124,7 @@ public class DiscordHandler {
                     .append(client.getLair().getKobolds().size())
                     .append(" kobold").append((client.getLair().getKobolds().size() != 1) ? "s" : "");
         } else {
-            container.setDetails("Following dragon " + client.getDragon().getName());
+            container.setDetails("Following " + client.getDragon().getName());
             detailsBuilder
                     .append(client.getDragon().getKobolds().size())
                     .append(" kobold").append((client.getDragon().getKobolds().size() != 1) ? "s" : "");
@@ -142,6 +142,8 @@ public class DiscordHandler {
             String findProcess = "Discord.exe";
             String filenameFilter = "/nh /fi \"Imagename eq " + findProcess + "\"";
             String tasklist = System.getenv("windir") + "/system32/tasklist.exe " + filenameFilter;
+
+            @SuppressWarnings("deprecation")
             Process p = Runtime.getRuntime().exec(tasklist);//new ProcessBuilder(tasklist, "").start();
 
             try (final BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()))) {

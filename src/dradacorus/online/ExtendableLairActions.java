@@ -331,7 +331,7 @@ public abstract class ExtendableLairActions implements ILairActions {
 
     @Override
     public void setLairName(IKoboldSocket kobold, String name) {
-        ILair lair = (ILair) dragon;
+        ILair lair = dragon;
 
         if (kobold.getLair() != null) {
             lair = kobold.getLair();
@@ -352,7 +352,7 @@ public abstract class ExtendableLairActions implements ILairActions {
 
     @Override
     public void setLairPassword(IKoboldSocket kobold, String password) {
-        ILair lair = (ILair) dragon;
+        ILair lair = dragon;
 
         if (kobold.getLair() != null) {
             lair = kobold.getLair();
@@ -373,7 +373,7 @@ public abstract class ExtendableLairActions implements ILairActions {
             return;
         }
 
-        ILair lair = (ILair) dragon;
+        ILair lair = dragon;
 
         if (kobold.getLair() != null) {
             lair = kobold.getLair();
@@ -414,7 +414,7 @@ public abstract class ExtendableLairActions implements ILairActions {
             return;
         }
 
-        ILair lair = (ILair) dragon;
+        ILair lair = dragon;
 
         if (kobold.getLair() != null) {
             lair = kobold.getLair();
@@ -455,7 +455,7 @@ public abstract class ExtendableLairActions implements ILairActions {
             return;
         }
 
-        ILair lair = (ILair) dragon;
+        ILair lair = dragon;
 
         if (kobold.getLair() != null) {
             lair = kobold.getLair();
@@ -503,7 +503,7 @@ public abstract class ExtendableLairActions implements ILairActions {
             return;
         }
 
-        ILair lair = (ILair) dragon;
+        ILair lair = dragon;
 
         if (kobold.getLair() != null) {
             lair = kobold.getLair();

@@ -57,7 +57,7 @@ public abstract class ExtendableKoboldSocket extends Thread implements IKoboldSo
                 listen();
             }
 
-            DragonConsole.WriteLine("DragonSocket", getKoboldName() + " disconnected from server");
+            DragonConsole.WriteLine(this.getClass(), getKoboldName() + " disconnected from server");
         } catch (IOException ex) {
             Logger.getLogger(IKoboldSocket.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -71,8 +71,8 @@ public abstract class ExtendableKoboldSocket extends Thread implements IKoboldSo
             if (connected) {
                 execute(input);
 
-                //Console.WriteLine("ExtendableKoboldSocket", getPlayer().getName() + ": " + new String(TinkHelper.encryptBytes(input, key), StandardCharsets.US_ASCII));
-                DragonConsole.WriteLine("DragonSocket", getKoboldName() + ": " + new String(input));
+                //Console.WriteLine(this.getClass(), getPlayer().getName() + ": " + new String(TinkHelper.encryptBytes(input, key), StandardCharsets.US_ASCII));
+                DragonConsole.WriteLine(this.getClass(), getKoboldName() + ": " + new String(input));
             }
 
             SocketHelper.Output.sendDiscordUpdate(this);

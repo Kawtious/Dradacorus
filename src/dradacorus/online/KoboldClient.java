@@ -80,13 +80,13 @@ public class KoboldClient {
             while (connected) {
             }
 
-            DragonConsole.WriteLine("KoboldClient", "Disconnected from server");
+            DragonConsole.WriteLine(this.getClass(), "Disconnected from server");
 
             dis.close();
             dos.close();
             return true;
         } catch (IOException ex) {
-            DragonConsole.Error.WriteLine("KoboldClient", "Disconnected: " + ex.getMessage());
+            DragonConsole.Error.WriteLine(this.getClass(), "Disconnected: " + ex.getMessage());
         }
 
         return false;
@@ -114,7 +114,7 @@ public class KoboldClient {
                 }
             }
         } else {
-            DragonConsole.WriteLine("KoboldClient", str);
+            DragonConsole.WriteLine(this.getClass(), str);
         }
     }
 
@@ -122,7 +122,7 @@ public class KoboldClient {
         this.key = Arrays.copyOf(key, key.length);
         send(key);
         connected = true;
-        DragonConsole.WriteLine("KoboldClient", "Connected to " + ip + ":" + port);
+        DragonConsole.WriteLine(this.getClass(), "Connected to " + ip + ":" + port);
     }
 
     private Thread listen() {

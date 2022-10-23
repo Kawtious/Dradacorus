@@ -9,7 +9,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
 
-public interface IDragonServer {
+public interface IDragonServer extends ILair {
 
     public boolean start();
 
@@ -33,16 +33,6 @@ public interface IDragonServer {
 
     public void removeLair(ILair lair);
 
-    public String getName();
-
-    public void setName(String name);
-
-    public boolean hasPassword();
-
-    public String getPassword();
-
     public List<ILair> getLairs();
-
-    public List<IKoboldSocket> getKobolds();
 
 }
