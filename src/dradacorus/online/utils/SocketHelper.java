@@ -25,7 +25,7 @@ public class SocketHelper {
     private SocketHelper() {
     }
 
-    public class Input {
+    public static class Input {
 
         public static byte[] readBytes(DataInputStream dis, byte[] key) throws IOException {
             int len = dis.readInt();
@@ -60,7 +60,7 @@ public class SocketHelper {
 
     }
 
-    public class Output {
+    public static class Output {
 
         public static void sendBytes(DataOutputStream dos, byte[] data, byte[] key) throws IOException {
             byte[] bytes = TinkHelper.encryptBytes(data, key);

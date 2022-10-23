@@ -11,7 +11,7 @@ import java.util.Scanner;
 
 public class Dradacorus {
 
-    private static final String VERSION = "Kobold-0.7.2.1";
+    private static final String VERSION = "Kobold-0.7.2.2";
 
     public static void verifyVersion() {
         String versionTitle = VERSION.split("-")[0];

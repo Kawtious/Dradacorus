@@ -108,9 +108,9 @@ public class KoboldClient {
         if (str.equals(SocketHelper.OBJ_INCOMING_HEADER)) {
             Object obj = SocketHelper.Input.getObjectFromBytes(SocketHelper.Input.readBytes(dis, key));
 
-            if (obj instanceof DiscordContainer container) {
+            if (obj instanceof DiscordContainer) {
                 if (DiscordHandler.isEnabled()) {
-                    DiscordHandler.update(container);
+                    DiscordHandler.update((DiscordContainer) obj);
                 }
             }
         } else {
