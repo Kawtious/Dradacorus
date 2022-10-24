@@ -33,7 +33,11 @@ public class DiscordHandler {
      * @param appId
      */
     public static boolean init(String appId) {
-        if (isEnabled()) {
+        if (enabled) {
+            return false;
+        }
+
+        if (!isDiscordRunning()) {
             return false;
         }
 
@@ -63,7 +67,7 @@ public class DiscordHandler {
      * Self-explanatory. Shuts down Rich Presence
      */
     public static void shutdown() {
-        if (!isEnabled()) {
+        if (!enabled) {
             return;
         }
 
@@ -82,7 +86,7 @@ public class DiscordHandler {
      * @param partyMax    Determines the lobby's size
      */
     public static void update(DiscordContainer container) {
-        if (!isEnabled()) {
+        if (!enabled) {
             return;
         }
 

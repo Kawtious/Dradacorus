@@ -5,6 +5,7 @@
 package dradacorus.application;
 
 import dradacorus.online.mods.dragon.DragonServer;
+import dradacorus.utils.SoundTrack;
 
 public class RunServer {
 
@@ -16,6 +17,8 @@ public class RunServer {
     public static void main(String[] args) {
         // TODO code application logic here
         DragonServer dragon = new DragonServer(PORT);
+        SoundTrack track = new SoundTrack("./bell.wav", SoundTrack.MAX_VOLUME);
+        track.play();
 
         if (!dragon.start()) {
             System.exit(1);

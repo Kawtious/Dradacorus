@@ -40,7 +40,7 @@ public class SocketHelper {
                 // ... this is fine
             }
 
-            return new byte[1];
+            return new byte[0];
         }
 
         public static Object getObjectFromBytes(byte[] bytes) {
@@ -63,7 +63,7 @@ public class SocketHelper {
             } catch (IOException ex) {
                 Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
             }
-            return new byte[1];
+            return new byte[0];
         }
 
         private Input() {
@@ -74,8 +74,10 @@ public class SocketHelper {
     public static class Output {
 
         public static void sendBytes(DataOutputStream dos, byte[] data, byte[] key) throws IOException {
-            byte[] bytes = TinkHelper.encryptBytes(data, key);
-            sendBytes(dos, bytes, 0, bytes.length);
+            if (data != null && data.length > 0) {
+                byte[] bytes = TinkHelper.encryptBytes(data, key);
+                sendBytes(dos, bytes, 0, bytes.length);
+            }
         }
 
         public static void sendBytes(DataOutputStream dos, byte[] data, int start, int len) throws IOException {
@@ -115,6 +117,7 @@ public class SocketHelper {
         }
 
         public static void sendObject(IKoboldSocket kobold, Object object) {
+            send(kobold, OBJ_INCOMING_HEADER);
             send(kobold, Input.readObjectBytes(object));
         }
 
@@ -131,7 +134,6 @@ public class SocketHelper {
         }
 
         public static void sendDiscordUpdate(IKoboldSocket kobold) {
-            send(kobold, OBJ_INCOMING_HEADER);
             sendObject(kobold, DiscordHandler.buildDiscordContainer(kobold));
         }
 

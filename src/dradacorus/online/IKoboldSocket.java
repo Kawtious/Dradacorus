@@ -7,7 +7,6 @@ package dradacorus.online;
 import dradacorus.online.ExtendableKoboldSocket.Invite;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.net.Socket;
 import java.util.List;
 
@@ -19,7 +18,7 @@ public interface IKoboldSocket {
 
     public byte[] listen();
 
-    public void execute(byte[] msg) throws IOException;
+    public void execute(byte[] msg);
 
     public Invite createInvite();
 

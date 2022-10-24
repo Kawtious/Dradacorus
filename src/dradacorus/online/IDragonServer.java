@@ -19,7 +19,7 @@ public interface IDragonServer extends ILair {
 
     public IKoboldSocket createKoboldSocket(Socket socket) throws IOException;
 
-    public boolean validate(IKoboldSocket kobold, byte[] key) throws IOException;
+    public boolean validate(IKoboldSocket kobold, byte[] key);
 
     public void add(IKoboldSocket kobold) throws IOException;
 

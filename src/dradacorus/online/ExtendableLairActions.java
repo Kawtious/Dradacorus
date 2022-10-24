@@ -142,7 +142,13 @@ public abstract class ExtendableLairActions implements ILairActions {
 
     @Override
     public void setKoboldName(IKoboldSocket kobold, String name) {
-        kobold.setKoboldName(name);
+        String koboldName = name;
+        int i = 1;
+        while (LairUtils.findKoboldByName(dragon.getKobolds(), koboldName) != -1) {
+            koboldName = name + "(" + i + ")";
+            i++;
+        }
+        kobold.setKoboldName(koboldName);
         SocketHelper.Output.send(kobold, "Name set to " + kobold.getKoboldName());
     }
 
@@ -267,8 +273,8 @@ public abstract class ExtendableLairActions implements ILairActions {
 
         kobold1.addInvite(invite);
 
-        SocketHelper.Output.send(kobold, "Sent invite to kobold " + kobold1.getKoboldName());
-        SocketHelper.Output.send(kobold1, "Kobold " + kobold.getKoboldName() + " invited you to lair " + kobold.getLair().getName() + " (/accept or /decline " + kobold.getKoboldName() + ")" + (!message.isEmpty() ? ": " + message : ""));
+        SocketHelper.Output.send(kobold, "Sent invite to " + kobold1.getKoboldName());
+        SocketHelper.Output.send(kobold1, kobold.getKoboldName() + " invited you to lair " + kobold.getLair().getName() + " (/accept or /decline " + kobold.getKoboldName() + ")" + (!message.isEmpty() ? ": " + message : ""));
     }
 
     @Override

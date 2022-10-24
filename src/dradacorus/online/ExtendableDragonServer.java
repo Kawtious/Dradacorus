@@ -95,7 +95,7 @@ public abstract class ExtendableDragonServer implements IDragonServer {
     public abstract IKoboldSocket createKoboldSocket(Socket socket) throws IOException;
 
     @Override
-    public boolean validate(IKoboldSocket kobold, byte[] key) throws IOException {
+    public boolean validate(IKoboldSocket kobold, byte[] key) {
         SocketHelper.Output.send(kobold, key);
         kobold.setKey(key);
 

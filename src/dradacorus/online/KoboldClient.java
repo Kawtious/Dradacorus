@@ -30,14 +30,11 @@ public class KoboldClient {
 
     private final int port;
 
-    private final boolean discordEnabled;
-
     private volatile boolean connected = false;
 
-    public KoboldClient(String ip, int port, boolean discordEnabled) {
+    public KoboldClient(String ip, int port) {
         this.ip = ip;
         this.port = port;
-        this.discordEnabled = discordEnabled;
     }
 
     public boolean run(String[] args) {
@@ -58,17 +55,17 @@ public class KoboldClient {
             dos = new DataOutputStream(socket.getOutputStream());
             Dradacorus.verifyVersion();
 
-            receive();
+            setup(receive());
+
+            connected = true;
+
+            DragonConsole.WriteLine(this.getClass(), "Connected to " + ip + ":" + port);
+
+            Thread listen = listen();
+            listen.setDaemon(true);
+            listen.start();
 
             if (connected) {
-                if (discordEnabled) {
-                    connectDiscord();
-                }
-
-                Thread listen = listen();
-                listen.setDaemon(true);
-                listen.start();
-
                 Thread write = write();
                 write.setDaemon(true);
                 write.start();
@@ -91,27 +88,35 @@ public class KoboldClient {
             dos.close();
             return true;
         } catch (IOException ex) {
-            DragonConsole.Error.WriteLine(this.getClass(), "Disconnected: " + ex.getMessage());
+            Logger.getLogger(KoboldClient.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return false;
     }
 
-    private void receive() throws IOException {
-        byte[] message = SocketHelper.Input.readBytes(dis, key);
-        processMessage(message);
+    private Thread listen() {
+        return new Thread(() -> {
+            while (connected) {
+                processMessage(receive());
+            }
+        });
     }
 
-    private void processMessage(byte[] message) throws IOException {
+    private Thread write() {
+        return new Thread(() -> {
+            try (final Scanner scanner = new Scanner(System.in)) {
+                while (connected) {
+                    send(scanner.nextLine().getBytes());
+                }
+            }
+        });
+    }
+
+    private void processMessage(byte[] message) {
         String str = new String(message);
 
-        if (!connected) {
-            setup(message);
-            return;
-        }
-
         if (str.equals(SocketHelper.OBJ_INCOMING_HEADER)) {
-            Object obj = SocketHelper.Input.getObjectFromBytes(SocketHelper.Input.readBytes(dis, key));
+            Object obj = SocketHelper.Input.getObjectFromBytes(receive());
 
             if (obj instanceof DiscordContainer) {
                 if (DiscordHandler.isEnabled()) {
@@ -123,54 +128,36 @@ public class KoboldClient {
         }
     }
 
-    private void setup(byte[] key) {
-        this.key = Arrays.copyOf(key, key.length);
-        send(key);
-        connected = true;
-        DragonConsole.WriteLine(this.getClass(), "Connected to " + ip + ":" + port);
-    }
-
-    private Thread listen() {
-        return new Thread(() -> {
-            while (connected) {
-                try {
-                    receive();
-                } catch (IOException ex) {
-                    Logger.getLogger(KoboldClient.class.getName()).log(Level.SEVERE, null, ex);
-                    disconnect();
-                }
-            }
-        });
-    }
-
-    private Thread write() {
-        return new Thread(() -> {
-            try (final Scanner scanner = new Scanner(System.in)) {
-                while (connected) {
-                    byte[] message = scanner.nextLine().getBytes();
-                    if (message != null && message.length > 0) {
-                        send(message);
-                    }
-                }
-            }
-        });
+    private byte[] receive() {
+        try {
+            return SocketHelper.Input.readBytes(dis, key);
+        } catch (IOException ex) {
+            Logger.getLogger(KoboldClient.class.getName()).log(Level.SEVERE, null, ex);
+            disconnect();
+        }
+        return null;
     }
 
     private void send(byte[] message) {
         try {
             SocketHelper.Output.sendBytes(dos, message, key);
         } catch (IOException ex) {
+            Logger.getLogger(KoboldClient.class.getName()).log(Level.SEVERE, null, ex);
+            disconnect();
         }
     }
 
-    private void connectDiscord() {
-        if (DiscordHandler.isDiscordRunning()) {
-            DiscordHandler.init("1033353477935599746");
-        }
+    private void setup(byte[] key) {
+        this.key = Arrays.copyOf(key, key.length);
+        send(key);
     }
 
     private void disconnect() {
         connected = false;
+    }
+
+    public boolean connectDiscord() {
+        return DiscordHandler.init("1033353477935599746");
     }
 
 }

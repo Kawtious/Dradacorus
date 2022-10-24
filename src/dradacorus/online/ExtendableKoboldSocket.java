@@ -57,7 +57,7 @@ public abstract class ExtendableKoboldSocket extends Thread implements IKoboldSo
                 listen();
             }
 
-            DragonConsole.WriteLine(this.getClass(), getKoboldName() + " disconnected from server");
+            DragonConsole.WriteLine(this.getClass(), getKoboldName() + " has disconnected");
         } catch (IOException ex) {
             Logger.getLogger(IKoboldSocket.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -86,7 +86,7 @@ public abstract class ExtendableKoboldSocket extends Thread implements IKoboldSo
     }
 
     @Override
-    public void execute(byte[] msg) throws IOException {
+    public void execute(byte[] msg) {
         String input = new String(msg);
 
         if (ValidationUtils.validateAction(input)) {
