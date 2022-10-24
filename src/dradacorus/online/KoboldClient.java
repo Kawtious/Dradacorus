@@ -30,11 +30,14 @@ public class KoboldClient {
 
     private final int port;
 
+    private final boolean discordEnabled;
+
     private volatile boolean connected = false;
 
-    public KoboldClient(String ip, int port) {
+    public KoboldClient(String ip, int port, boolean discordEnabled) {
         this.ip = ip;
         this.port = port;
+        this.discordEnabled = discordEnabled;
     }
 
     public boolean run(String[] args) {
@@ -58,7 +61,9 @@ public class KoboldClient {
             receive();
 
             if (connected) {
-                connectDiscord();
+                if (discordEnabled) {
+                    connectDiscord();
+                }
 
                 Thread listen = listen();
                 listen.setDaemon(true);

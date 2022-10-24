@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -28,17 +29,25 @@ public class SocketHelper {
     public static class Input {
 
         public static byte[] readBytes(DataInputStream dis, byte[] key) throws IOException {
-            int len = dis.readInt();
-            byte[] data = new byte[len];
-            if (len > 0) {
-                dis.readFully(data);
+            try {
+                int len = dis.readInt();
+                byte[] data = new byte[len];
+                if (len > 0) {
+                    dis.readFully(data);
+                }
+                return TinkHelper.decryptBytes(data, key);
+            } catch (EOFException e) {
+                // ... this is fine
             }
-            return TinkHelper.decryptBytes(data, key);
+
+            return new byte[1];
         }
 
         public static Object getObjectFromBytes(byte[] bytes) {
-            try (final ByteArrayInputStream bis = new ByteArrayInputStream(bytes); final ObjectInputStream in = new ObjectInputStream(bis)) {
-                return in.readObject();
+            try (final ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
+                try (final ObjectInputStream in = new ObjectInputStream(bis)) {
+                    return in.readObject();
+                }
             } catch (IOException | ClassNotFoundException ex) {
                 Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -46,9 +55,11 @@ public class SocketHelper {
         }
 
         public static byte[] readObjectBytes(Object object) {
-            try (final ByteArrayOutputStream bos = new ByteArrayOutputStream(); final ObjectOutputStream out = new ObjectOutputStream(bos)) {
-                out.writeObject(object);
-                return bos.toByteArray();
+            try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+                try (final ObjectOutputStream out = new ObjectOutputStream(bos)) {
+                    out.writeObject(object);
+                    return bos.toByteArray();
+                }
             } catch (IOException ex) {
                 Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
             }
