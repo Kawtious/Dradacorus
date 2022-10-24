@@ -24,7 +24,7 @@ hs_err_pid*
 # Netbeans Files #
 /build/
 /nbproject/
-/dist/README.TXT
+/dist/
 build.xml
 manifest.mf
 keyset.json
