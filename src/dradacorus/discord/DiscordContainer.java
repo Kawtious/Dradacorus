@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 public class DiscordContainer implements Serializable {
 
-    private static final long serialVersionUID = -4156074L;
+    private static final long serialVersionUID = 1L;
 
     private String title;
 

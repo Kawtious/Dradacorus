@@ -8,9 +8,9 @@ public interface ILairActions {
 
     public void executeAction(IKoboldSocket kobold, String input);
 
-    public void help(IKoboldSocket kobold);
-
     public String listActions();
+
+    public void help(IKoboldSocket kobold);
 
     public void setKoboldName(IKoboldSocket kobold, String name);
 
@@ -45,4 +45,7 @@ public interface ILairActions {
     public void listLairs(IKoboldSocket kobold);
 
     public void unknown(IKoboldSocket kobold, String action);
+
+    public void playSound(IKoboldSocket kobold, String soundfile, String volume, String cycleCount);
+
 }

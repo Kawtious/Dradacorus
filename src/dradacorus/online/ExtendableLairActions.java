@@ -5,8 +5,11 @@
 package dradacorus.online;
 
 import dradacorus.online.ExtendableKoboldSocket.Invite;
+import dradacorus.online.sound.SoundData;
+import dradacorus.online.sound.SoundTrack;
 import dradacorus.online.utils.LairUtils;
 import dradacorus.online.utils.SocketHelper;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -45,99 +48,105 @@ public abstract class ExtendableLairActions implements ILairActions {
         String execute = getArgument(arguments, 0);
 
         switch (execute) {
-            case "/help", "/?" -> {
+            case "/help":
                 help(kobold);
-            }
-            case "/setname", "/nickname", "/name" -> {
+                break;
+            case "/setname":
                 setKoboldName(kobold, getArgument(arguments, 1));
-            }
-            case "/createlair" -> {
+                break;
+            case "/createlair":
                 createLair(kobold, getArgument(arguments, 1), getArgument(arguments, 2));
-            }
-            case "/joinlair" -> {
+                break;
+            case "/joinlair":
                 joinLair(kobold, getArgument(arguments, 1), getArgument(arguments, 2));
-            }
-            case "/leavelair" -> {
+                break;
+            case "/leavelair":
                 leaveLair(kobold);
-            }
-            case "/invite" -> {
+                break;
+            case "/invite":
                 invite(kobold, getArgument(arguments, 1), getArgument(arguments, 2));
-            }
-            case "/accept" -> {
+                break;
+            case "/accept":
                 accept(kobold, getArgument(arguments, 1));
-            }
-            case "/decline" -> {
+                break;
+            case "/decline":
                 decline(kobold, getArgument(arguments, 1));
-            }
-            case "/disconnect" -> {
+                break;
+            case "/disconnect":
                 disconnect(kobold);
-            }
-            case "/setlairname" -> {
+                break;
+            case "/setlairname":
                 setLairName(kobold, getArgument(arguments, 1));
-            }
-            case "/setlairpassword" -> {
+                break;
+            case "/setlairpassword":
                 setLairPassword(kobold, getArgument(arguments, 1));
-            }
-            case "/kick" -> {
+                break;
+            case "/kick":
                 kick(kobold, getArgument(arguments, 1));
-            }
-            case "/ban" -> {
+                break;
+            case "/ban":
                 ban(kobold, getArgument(arguments, 1));
-            }
-            case "/op" -> {
+                break;
+            case "/op":
                 op(kobold, getArgument(arguments, 1));
-            }
-            case "/deop" -> {
+                break;
+            case "/deop":
                 deop(kobold, getArgument(arguments, 1));
-            }
-            case "/listkobolds" -> {
+                break;
+            case "/listkobolds":
                 listKobolds(kobold);
-            }
-            case "/listlairs" -> {
+                break;
+            case "/listlairs":
                 listLairs(kobold);
-            }
+                break;
+            case "/playsound":
+                playSound(kobold, getArgument(arguments, 1), getArgument(arguments, 2), getArgument(arguments, 3));
+                break;
+            //case "/playmusic":
+            //playMusic(kobold, getArgument(arguments, 1), getArgument(arguments, 2));
+            //break;
+            //case "/stopmusic":
+            //stopMusic(kobold);
+            //break;
 
             // Unknown
-            default -> {
+            default:
                 unknown(kobold, getArgument(arguments, 0));
-            }
+                break;
         }
     }
 
     @Override
-    public void help(IKoboldSocket kobold) {
-        SocketHelper.Output.send(kobold, listActions());
-    }
-
-    @Override
     public String listActions() {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("List of actions:\n");
+        String actions = "";
+        actions += "List of actions:\n";
 
         String[] actionsList = {
             "/help",
             "/setname",
-            "/createlair", "/createroom",
-            "/joinlair", "/joinroom",
-            "/leavelair", "/leaveroom",
+            "/createlair",
+            "/joinlair",
+            "/leavelair",
             "/invite", "/accept", "/decline",
             "/disconnect",
             "/setlairname",
             "/setlairpassword",
             "/kick", "/ban",
             "/op", "/deop",
-            "/listkobolds", "/listlairs"
+            "/listkobolds", "/listlairs",
+            "/playsound", //"/playmusic", "/stopmusic"
         };
 
         for (String action : actionsList) {
-            sb.append(action).append(", ");
+            actions += action + ", ";
         }
 
-        sb.delete(sb.length() - 2, sb.length());
+        return actions.substring(0, actions.length() - 2);
+    }
 
-        sb.append("\n");
-        return sb.toString();
+    @Override
+    public void help(IKoboldSocket kobold) {
+        SocketHelper.Output.send(kobold, listActions());
     }
 
     @Override
@@ -550,7 +559,7 @@ public abstract class ExtendableLairActions implements ILairActions {
 
     @Override
     public void listKobolds(IKoboldSocket kobold) {
-        StringBuilder sb = new StringBuilder();
+        String koboldsList = "";
 
         List<IKoboldSocket> kobolds = dragon.getKobolds();
 
@@ -559,12 +568,12 @@ public abstract class ExtendableLairActions implements ILairActions {
         }
 
         for (IKoboldSocket kobold1 : kobolds) {
-            sb.append(kobold1.getKoboldName()).append(", ");
+            koboldsList += kobold1.getKoboldName() + ", ";
         }
 
-        sb.delete(sb.length() - 2, sb.length());
+        koboldsList = koboldsList.substring(0, koboldsList.length() - 2);
 
-        SocketHelper.Output.send(kobold, sb.toString());
+        SocketHelper.Output.send(kobold, koboldsList);
     }
 
     @Override
@@ -574,24 +583,72 @@ public abstract class ExtendableLairActions implements ILairActions {
             return;
         }
 
-        StringBuilder sb = new StringBuilder();
+        String lairsList = "";
 
         if (dragon.getLairs().isEmpty()) {
             return;
         }
 
         for (ILair lair : dragon.getLairs()) {
-            sb.append(lair.getName()).append(", ");
+            lairsList += lair.getName() + ", ";
         }
 
-        sb.delete(sb.length() - 2, sb.length());
+        lairsList = lairsList.substring(0, lairsList.length() - 2);
 
-        SocketHelper.Output.send(kobold, sb.toString());
+        SocketHelper.Output.send(kobold, lairsList);
     }
 
     @Override
     public void unknown(IKoboldSocket kobold, String action) {
         SocketHelper.Output.send(kobold, "Unknown action: " + action);
+    }
+
+    @Override
+    public void playSound(IKoboldSocket kobold, String soundfile, String volume, String cycleCount) {
+        if (soundfile.isEmpty()) {
+            SocketHelper.Output.send(kobold, "You need to specify the name of a sound file");
+            return;
+        }
+
+        double vol = SoundTrack.getMaxVolume();
+
+        if (!volume.isEmpty()) {
+            vol = Double.parseDouble(volume);
+        }
+
+        int cycles = 1;
+
+        if (!cycleCount.isEmpty()) {
+            cycles = Integer.parseInt(cycleCount);
+        }
+
+        ILair lair = dragon;
+
+        if (kobold.getLair() != null) {
+            lair = kobold.getLair();
+        }
+
+        List<IKoboldSocket> kobolds = lair.getKobolds();
+
+        if (!(lair instanceof IDragonServer) && !LairUtils.isOperator(lair.getOperators(), kobold)) {
+            SocketHelper.Output.send(kobold, "You are not an operator of this lair");
+            return;
+        }
+
+        File file = new File("Audio/" + soundfile);
+
+        if (!file.exists()) {
+            SocketHelper.Output.send(kobold, "Sound file not found");
+            return;
+        }
+
+        SoundData sndData = new SoundData(file, vol, cycles);
+
+        SocketHelper.Output.sendTo(lair, "Playing sound " + soundfile);
+
+        for (IKoboldSocket kobold1 : kobolds) {
+            SocketHelper.Output.sendSoundPlayRequest(kobold1, sndData);
+        }
     }
 
 }

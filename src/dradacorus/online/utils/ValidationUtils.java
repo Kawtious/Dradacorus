@@ -13,7 +13,15 @@ public final class ValidationUtils {
     }
 
     public static boolean validateAction(String input) {
-        return input.substring(0, 1).equals(ACTION_PREFIX);
+        if (input.isEmpty()) {
+            return false;
+        }
+
+        try {
+            return input.substring(0, 1).equals(ACTION_PREFIX);
+        } catch (StringIndexOutOfBoundsException exception) {
+            return false;
+        }
     }
 
     public static void setActionPrefix(char prefix) {

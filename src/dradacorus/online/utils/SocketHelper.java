@@ -8,20 +8,60 @@ import dradacorus.discord.DiscordHandler;
 import dradacorus.online.IDragonServer;
 import dradacorus.online.IKoboldSocket;
 import dradacorus.online.ILair;
+import dradacorus.online.sound.SoundData;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SocketHelper {
 
-    public static final String OBJ_INCOMING_HEADER = "obj_data_incoming::";
+    public static final String OBJ_INCOMING_HEADER = "!obj_data_incoming::";
+
+    public static final String DISCORD_UPDATE_HEADER = "!discord_update::";
+
+    public static final String SOUND_REQUEST_HEADER = "!sound_request::";
+
+    public static byte[] getFileBytes(File file) {
+        try {
+            byte[] bytes = Files.readAllBytes(file.toPath());
+            return bytes;
+        } catch (IOException ex) {
+            Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public static Object buildObject(byte[] bytes) {
+        try (final ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
+            try (final ObjectInputStream in = new ObjectInputStream(bis)) {
+                return in.readObject();
+            }
+        } catch (IOException | ClassNotFoundException ex) {
+            Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    public static byte[] getObjectBytes(Object object) {
+        try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
+            try (final ObjectOutputStream out = new ObjectOutputStream(bos)) {
+                out.writeObject(object);
+                return bos.toByteArray();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return new byte[0];
+    }
 
     private SocketHelper() {
     }
@@ -40,29 +80,6 @@ public class SocketHelper {
                 // ... this is fine
             }
 
-            return new byte[0];
-        }
-
-        public static Object getObjectFromBytes(byte[] bytes) {
-            try (final ByteArrayInputStream bis = new ByteArrayInputStream(bytes)) {
-                try (final ObjectInputStream in = new ObjectInputStream(bis)) {
-                    return in.readObject();
-                }
-            } catch (IOException | ClassNotFoundException ex) {
-                Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            return null;
-        }
-
-        public static byte[] readObjectBytes(Object object) {
-            try (final ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
-                try (final ObjectOutputStream out = new ObjectOutputStream(bos)) {
-                    out.writeObject(object);
-                    return bos.toByteArray();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(SocketHelper.class.getName()).log(Level.SEVERE, null, ex);
-            }
             return new byte[0];
         }
 
@@ -104,21 +121,18 @@ public class SocketHelper {
 
         public static void sendTo(ILair lair, byte[] message) {
             for (IKoboldSocket kobold : lair.getKobolds()) {
-                send(kobold, message);
-            }
-        }
-
-        public static void sendTo(IDragonServer server, byte[] message) {
-            for (IKoboldSocket kobold : server.getKobolds()) {
-                if (kobold.getLair() == null) { // if not in a lair
+                if (lair instanceof IDragonServer) {
+                    if (kobold.getLair() == null) { // if not in a lair
+                        send(kobold, message);
+                    }
+                } else {
                     send(kobold, message);
                 }
             }
         }
 
         public static void sendObject(IKoboldSocket kobold, Object object) {
-            send(kobold, OBJ_INCOMING_HEADER);
-            send(kobold, Input.readObjectBytes(object));
+            send(kobold, getObjectBytes(object));
         }
 
         public static void send(IKoboldSocket kobold, String message) {
@@ -134,7 +148,13 @@ public class SocketHelper {
         }
 
         public static void sendDiscordUpdate(IKoboldSocket kobold) {
+            send(kobold, DISCORD_UPDATE_HEADER);
             sendObject(kobold, DiscordHandler.buildDiscordContainer(kobold));
+        }
+
+        public static void sendSoundPlayRequest(IKoboldSocket kobold, SoundData sndData) {
+            send(kobold, SOUND_REQUEST_HEADER);
+            sendObject(kobold, sndData);
         }
 
         private Output() {

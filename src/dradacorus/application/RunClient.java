@@ -23,6 +23,8 @@ public class RunClient {
         if (!kobold.run(ARGS)) {
             System.exit(1);
         }
+
+        System.exit(0);
     }
 
 }

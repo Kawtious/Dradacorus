@@ -20,6 +20,8 @@ public class RunServer {
         if (!dragon.start()) {
             System.exit(1);
         }
+
+        System.exit(0);
     }
 
 }

@@ -13,7 +13,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -52,12 +51,13 @@ public abstract class ExtendableKoboldSocket extends Thread implements IKoboldSo
 
     @Override
     public void run() {
-        try (socket; dos; dis) {
+        try {
             while (connected) {
                 listen();
             }
 
             DragonConsole.WriteLine(this.getClass(), getKoboldName() + " has disconnected");
+            socket.close();
         } catch (IOException ex) {
             Logger.getLogger(IKoboldSocket.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -92,10 +92,12 @@ public abstract class ExtendableKoboldSocket extends Thread implements IKoboldSo
         if (ValidationUtils.validateAction(input)) {
             actions.executeAction(this, input);
         } else {
-            if (getLair() != null) {
-                SocketHelper.Output.sendTo(getLair(), getKoboldName() + ": " + input);
-            } else {
-                SocketHelper.Output.sendTo(dragon, getKoboldName() + ": " + input);
+            if (!input.substring(0, 1).equals("!")) {
+                if (getLair() != null) {
+                    SocketHelper.Output.sendTo(getLair(), getKoboldName() + ": " + input);
+                } else {
+                    SocketHelper.Output.sendTo(dragon, getKoboldName() + ": " + input);
+                }
             }
         }
     }
@@ -151,12 +153,12 @@ public abstract class ExtendableKoboldSocket extends Thread implements IKoboldSo
 
     @Override
     public byte[] getKey() {
-        return key != null ? Arrays.copyOf(key, key.length) : null;
+        return key != null ? key.clone() : null;
     }
 
     @Override
     public void setKey(byte[] key) {
-        this.key = Arrays.copyOf(key, key.length);
+        this.key = key.clone();
     }
 
     @Override

@@ -4,11 +4,14 @@
  */
 package dradacorus.online;
 
+import dradacorus.online.sound.SoundData;
+import dradacorus.online.sound.SoundTrack;
 import dradacorus.online.utils.Dradacorus;
 import dradacorus.online.utils.LairUtils;
 import dradacorus.online.utils.SocketHelper;
 import dradacorus.utils.ColorUtils;
 import dradacorus.utils.DragonConsole;
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -48,6 +51,8 @@ public abstract class ExtendableDragonServer implements IDragonServer {
             return false;
         }
 
+        Dradacorus.verifyVersion();
+
         run(port);
 
         return true;
@@ -56,16 +61,13 @@ public abstract class ExtendableDragonServer implements IDragonServer {
     @Override
     public void run(int port) {
         try (final ServerSocket server = new ServerSocket(port)) {
-            Dradacorus.verifyVersion();
-
             running = true;
-
-            listen(server).start();
 
             DragonConsole.WriteLine(this.getClass(), name + " is now flying!");
             DragonConsole.WriteLine(this.getClass(), "Listening on port " + port);
 
             while (running) {
+                listen(server);
             }
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
@@ -73,22 +75,18 @@ public abstract class ExtendableDragonServer implements IDragonServer {
     }
 
     @Override
-    public Thread listen(ServerSocket server) {
-        return new Thread(() -> {
-            while (running) {
-                try {
-                    Socket socket = server.accept();
-                    IKoboldSocket kobold = createKoboldSocket(socket);
+    public void listen(ServerSocket server) {
+        try {
+            Socket socket = server.accept();
+            IKoboldSocket kobold = createKoboldSocket(socket);
 
-                    byte[] key = UUID.randomUUID().toString().getBytes("ISO-8859-1");
+            byte[] key = UUID.randomUUID().toString().getBytes("ISO-8859-1");
 
-                    if (validate(kobold, key)) {
-                        add(kobold);
-                    }
-                } catch (IOException ex) {
-                }
+            if (validate(kobold, key)) {
+                add(kobold);
             }
-        });
+        } catch (IOException ex) {
+        }
     }
 
     @Override
@@ -116,6 +114,9 @@ public abstract class ExtendableDragonServer implements IDragonServer {
                     return false;
                 }
             }
+
+            SoundData sndData = new SoundData(new File("Audio/bell.wav"), SoundTrack.getMaxVolume(), 1);
+            SocketHelper.Output.sendSoundPlayRequest(kobold, sndData);
 
             SocketHelper.Output.send(kobold, "Type /? or /help for a list of actions");
             return true;

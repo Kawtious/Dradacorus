@@ -120,21 +120,19 @@ public class DiscordHandler {
     public static DiscordContainer buildDiscordContainer(IKoboldSocket client) {
         DiscordContainer container = new DiscordContainer();
 
-        StringBuilder detailsBuilder = new StringBuilder();
+        String details = "";
 
         if (client.getLair() != null) {
-            container.setDetails("In lair " + client.getLair().getName());
-            detailsBuilder
-                    .append(client.getLair().getKobolds().size())
-                    .append(" kobold").append((client.getLair().getKobolds().size() != 1) ? "s" : "");
+            details += "In lair " + client.getLair().getName();
+            details += client.getLair().getKobolds().size();
+            details += " kobold" + ((client.getLair().getKobolds().size() != 1) ? "s" : "");
         } else {
-            container.setDetails("Following " + client.getDragon().getName());
-            detailsBuilder
-                    .append(client.getDragon().getKobolds().size())
-                    .append(" kobold").append((client.getDragon().getKobolds().size() != 1) ? "s" : "");
+            details += "Following " + client.getDragon().getName();
+            details += client.getDragon().getKobolds().size();
+            details += " kobold" + ((client.getDragon().getKobolds().size() != 1) ? "s" : "");
         }
 
-        container.setTitle(detailsBuilder.toString());
+        container.setTitle(details);
         return container;
     }
 

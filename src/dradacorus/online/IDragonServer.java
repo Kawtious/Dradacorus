@@ -15,7 +15,7 @@ public interface IDragonServer extends ILair {
 
     public void run(int port);
 
-    public Thread listen(ServerSocket server);
+    public void listen(ServerSocket server);
 
     public IKoboldSocket createKoboldSocket(Socket socket) throws IOException;
 
