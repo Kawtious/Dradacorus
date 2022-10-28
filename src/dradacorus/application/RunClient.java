@@ -10,7 +10,7 @@ public class RunClient {
 
     private static final String SERVER_IP = "localhost";
     private static final int SERVER_PORT = 1001;
-    private static final String[] ARGS = {"/setname caz"};
+    private static final String[] ARGS = {};
 
     /**
      * @param args the command line arguments
