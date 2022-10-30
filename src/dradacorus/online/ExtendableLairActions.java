@@ -118,8 +118,8 @@ public abstract class ExtendableLairActions implements ILairActions {
 
     @Override
     public String listActions() {
-        String actions = "";
-        actions += "List of actions:\n";
+        StringBuilder actions = new StringBuilder();
+        actions.append("List of actions:\n");
 
         String[] actionsList = {
             "/help",
@@ -138,7 +138,7 @@ public abstract class ExtendableLairActions implements ILairActions {
         };
 
         for (String action : actionsList) {
-            actions += action + ", ";
+            actions.append(action).append(", ");
         }
 
         return actions.substring(0, actions.length() - 2);
@@ -152,11 +152,13 @@ public abstract class ExtendableLairActions implements ILairActions {
     @Override
     public void setKoboldName(IKoboldSocket kobold, String name) {
         String koboldName = name;
+
         int i = 1;
         while (LairUtils.findKoboldByName(dragon.getKobolds(), koboldName) != -1) {
             koboldName = name + "(" + i + ")";
             i++;
         }
+
         kobold.setKoboldName(koboldName);
         SocketHelper.Output.send(kobold, "Name set to " + kobold.getKoboldName());
     }
@@ -559,7 +561,7 @@ public abstract class ExtendableLairActions implements ILairActions {
 
     @Override
     public void listKobolds(IKoboldSocket kobold) {
-        String koboldsList = "";
+        StringBuilder koboldsList = new StringBuilder();
 
         List<IKoboldSocket> kobolds = dragon.getKobolds();
 
@@ -568,12 +570,12 @@ public abstract class ExtendableLairActions implements ILairActions {
         }
 
         for (IKoboldSocket kobold1 : kobolds) {
-            koboldsList += kobold1.getKoboldName() + ", ";
+            koboldsList.append(kobold1.getKoboldName()).append(", ");
         }
 
-        koboldsList = koboldsList.substring(0, koboldsList.length() - 2);
+        koboldsList.delete(koboldsList.length() - 2, koboldsList.length());
 
-        SocketHelper.Output.send(kobold, koboldsList);
+        SocketHelper.Output.send(kobold, koboldsList.toString());
     }
 
     @Override
@@ -583,19 +585,19 @@ public abstract class ExtendableLairActions implements ILairActions {
             return;
         }
 
-        String lairsList = "";
+        StringBuilder lairsList = new StringBuilder();
 
         if (dragon.getLairs().isEmpty()) {
             return;
         }
 
         for (ILair lair : dragon.getLairs()) {
-            lairsList += lair.getName() + ", ";
+            lairsList.append(lair.getName()).append(", ");
         }
 
-        lairsList = lairsList.substring(0, lairsList.length() - 2);
+        lairsList.delete(lairsList.length() - 2, lairsList.length());
 
-        SocketHelper.Output.send(kobold, lairsList);
+        SocketHelper.Output.send(kobold, lairsList.toString());
     }
 
     @Override
