@@ -21,10 +21,11 @@
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
 
-# Netbeans Files #
-/build/
-/nbproject/
-/dist/
-build.xml
-manifest.mf
+# Maven Files #
+/target/
+
+# Ignore keyset generated from Tink #
 keyset.json
+
+# Ignore Netbeans Files #
+nb-configuration.xml
