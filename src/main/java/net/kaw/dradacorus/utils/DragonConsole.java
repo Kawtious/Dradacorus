@@ -53,26 +53,19 @@ public class DragonConsole {
         @Override
         public boolean isLoggable(LogRecord log) {
             // don't log CONFIG logs in file
-            if (log.getLevel() == Level.CONFIG)
-                return false;
-            return true;
+            return log.getLevel() == Level.CONFIG;
         }
     }
 
     private static void log(String msg) {
         try {
             LogManager.getLogManager().readConfiguration(new FileInputStream("logger.properties"));
-        } catch (SecurityException | IOException e1) {
-            e1.printStackTrace();
-        }
-        logger.addHandler(new ConsoleHandler());
-        // adding custom handler
-        logger.addHandler(new StreamHandler());
-        logger.setLevel(Level.FINE);
+            // adding custom handler
+            logger.addHandler(new StreamHandler());
+            logger.setLevel(Level.FINE);
 
-        try {
             // FileHandler file name with max size and number of log files limit
-            Handler fileHandler = new FileHandler("./tmp/logger.log", 2000, 5);
+            Handler fileHandler = new FileHandler("./tmp/logger.log", true);
             fileHandler.setFormatter(new MyFormatter());
             // setting custom filter for FileHandler
             fileHandler.setFilter(new MyFilter());
@@ -80,13 +73,12 @@ public class DragonConsole {
 
             // logging messages
             logger.log(Level.INFO, msg);
-            logger.log(Level.CONFIG, "Config data");
         } catch (SecurityException | IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static String getOutput(String string) {
+    public static String getOutput(String string) {
         LocalDateTime now = LocalDateTime.now();
         int day = now.getDayOfMonth();
         int month = now.getMonthValue();
@@ -99,7 +91,7 @@ public class DragonConsole {
                 hour, minute, second, millis, string);
     }
 
-    public static <T> void writeLine(String string) {
+    public static void writeLine(String string) {
         log(string);
     }
 
@@ -107,7 +99,7 @@ public class DragonConsole {
 
     public static class Error {
 
-        public static <T> void writeLine(String string) {
+        public static void writeLine(String string) {
             log(string);
         }
 
