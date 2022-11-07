@@ -56,7 +56,7 @@ public abstract class ExtendableDragonServer implements IDragonServer {
 
     private volatile boolean running = false;
 
-    protected ExtendableDragonServer(int port) {
+    public ExtendableDragonServer(int port) {
         this.port = port;
     }
 
